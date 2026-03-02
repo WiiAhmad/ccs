@@ -51,10 +51,8 @@ describe('Dashboard i18n', () => {
     await i18n.changeLanguage('en');
   });
 
-  it(
-    'renders language switcher and changes locale',
-    async () => {
-      render(<LanguageSwitcher />);
+  it('renders language switcher and changes locale', async () => {
+    render(<LanguageSwitcher />);
 
     expect(screen.getByRole('combobox')).toBeInTheDocument();
     expect(screen.getByText('English')).toBeInTheDocument();
@@ -66,9 +64,7 @@ describe('Dashboard i18n', () => {
       expect(i18n.language).toBe('zh-CN');
     });
     expect(localStorageMock.setItem).toHaveBeenCalledWith(LOCALE_STORAGE_KEY, 'zh-CN');
-    },
-    10000
-  );
+  }, 10000);
 
   it('restores locale from persisted storage', () => {
     persistLocale('zh-CN');

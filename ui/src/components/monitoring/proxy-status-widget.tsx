@@ -51,7 +51,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuery, useIsMutating } from '@tanstack/react-query';
 import { api, type CliproxyServerConfig } from '@/lib/api-client';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   useProxyStatus,
   useStartProxy,
@@ -545,14 +545,16 @@ export function ProxyStatusWidget() {
                 {t('proxyStatusWidget.installUnstableTitle')}
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-2">
-                <p
-                  dangerouslySetInnerHTML={{
-                    __html: t('proxyStatusWidget.installUnstableDesc', {
+                <p>
+                  <Trans
+                    i18nKey="proxyStatusWidget.installUnstableDesc"
+                    values={{
                       version: pendingInstallVersion ?? '',
                       maxStable: versionsData?.maxStableVersion || '6.6.80',
-                    }),
-                  }}
-                />
+                    }}
+                    components={{ strong: <strong /> }}
+                  />
+                </p>
                 <p className="text-amber-600 dark:text-amber-400">
                   {t('proxyStatusWidget.installUnstableWarning')}
                 </p>

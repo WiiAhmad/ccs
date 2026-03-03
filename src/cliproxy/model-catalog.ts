@@ -6,7 +6,11 @@
  */
 
 import { CLIProxyProvider } from './types';
-import { normalizeModelIdForProvider } from './model-id-normalizer';
+import {
+  isAntigravityProvider,
+  migrateDeniedAntigravityModelAliases,
+  normalizeModelIdForProvider,
+} from './model-id-normalizer';
 
 /**
  * Thinking support configuration for a model.
@@ -309,6 +313,14 @@ export function findModel(provider: CLIProxyProvider, modelId: string): ModelEnt
     .trim()
     .toLowerCase();
   const lookupCandidates = new Set([normalizedId, providerNormalizedId]);
+  if (isAntigravityProvider(provider)) {
+    const migratedRaw = migrateDeniedAntigravityModelAliases(normalizedId).trim().toLowerCase();
+    const migratedProvider = migrateDeniedAntigravityModelAliases(providerNormalizedId)
+      .trim()
+      .toLowerCase();
+    lookupCandidates.add(migratedRaw);
+    lookupCandidates.add(migratedProvider);
+  }
 
   return catalog.models.find((m) => lookupCandidates.has(m.id.toLowerCase()));
 }

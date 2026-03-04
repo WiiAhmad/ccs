@@ -21,7 +21,18 @@ import { ok, fail, info, color } from '../utils/ui';
  * Handle copilot subcommand.
  */
 export async function handleCopilotCommand(args: string[]): Promise<number> {
-  const subcommand = args[0];
+  const subcommandAliasMap: Record<string, string> = {
+    '--auth': 'auth',
+    '--status': 'status',
+    '--models': 'models',
+    '--usage': 'usage',
+    '--start': 'start',
+    '--stop': 'stop',
+    '--enable': 'enable',
+    '--disable': 'disable',
+  };
+  const rawSubcommand = args[0];
+  const subcommand = (rawSubcommand && subcommandAliasMap[rawSubcommand]) || rawSubcommand;
 
   switch (subcommand) {
     case 'auth':

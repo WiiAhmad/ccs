@@ -25,12 +25,26 @@ export async function isDaemonRunning(port: number): Promise<boolean> {
       {
         hostname: '127.0.0.1',
         port,
-        path: '/usage',
+        path: '/',
         method: 'GET',
         timeout: 3000,
       },
       (res) => {
-        resolve(res.statusCode === 200);
+        let body = '';
+        res.setEncoding('utf8');
+
+        res.on('data', (chunk) => {
+          body += chunk;
+        });
+
+        res.on('end', () => {
+          if (res.statusCode !== 200) {
+            resolve(false);
+            return;
+          }
+
+          resolve(body.trim().toLowerCase().includes('server running'));
+        });
       }
     );
 
@@ -137,6 +151,20 @@ export async function startDaemon(
 
   return new Promise((resolve) => {
     let proc: ChildProcess;
+    let resolved = false;
+    let checkTimeout: NodeJS.Timeout | null = null;
+
+    const safeResolve = (result: { success: boolean; pid?: number; error?: string }) => {
+      if (resolved) return;
+      resolved = true;
+      if (checkTimeout) {
+        clearTimeout(checkTimeout);
+      }
+      if (!result.success) {
+        removePidFile();
+      }
+      resolve(result);
+    };
 
     try {
       proc = spawn(binPath, args, {
@@ -155,30 +183,53 @@ export async function startDaemon(
       // Wait for daemon to be ready (poll for up to 30 seconds)
       let attempts = 0;
       const maxAttempts = 30;
-      const checkInterval = setInterval(async () => {
+      const pollHealth = async () => {
+        if (resolved) return;
         attempts++;
 
         if (await isDaemonRunning(config.port)) {
-          clearInterval(checkInterval);
-          resolve({ success: true, pid: proc.pid });
+          safeResolve({ success: true, pid: proc.pid });
         } else if (attempts >= maxAttempts) {
-          clearInterval(checkInterval);
-          resolve({
+          if (proc.pid) {
+            try {
+              process.kill(proc.pid, 'SIGTERM');
+            } catch {
+              // Already exited
+            }
+          }
+          safeResolve({
             success: false,
             error: 'Daemon did not start within 30 seconds',
           });
+        } else {
+          checkTimeout = setTimeout(pollHealth, 1000);
         }
-      }, 1000);
+      };
+      checkTimeout = setTimeout(pollHealth, 1000);
 
       proc.on('error', (err) => {
-        clearInterval(checkInterval);
-        resolve({
+        safeResolve({
           success: false,
           error: `Failed to start daemon: ${err.message}`,
         });
       });
+
+      proc.on('exit', (code, signal) => {
+        if (code === null) {
+          safeResolve({
+            success: false,
+            error: `Daemon process was killed by signal ${signal}`,
+          });
+          return;
+        }
+
+        safeResolve({
+          success: false,
+          error: `Daemon process exited with code ${code}`,
+        });
+      });
     } catch (err) {
-      resolve({
+      safeResolve({
         success: false,
         error: `Failed to spawn daemon: ${(err as Error).message}`,
       });

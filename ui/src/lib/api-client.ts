@@ -241,10 +241,20 @@ export interface QuotaResult {
   models: ModelQuota[];
   /** Timestamp of fetch */
   lastUpdated: number;
+  /** Upstream HTTP status when available */
+  httpStatus?: number;
+  /** Stable machine-readable error code */
+  errorCode?: string;
+  /** Additional provider-specific detail/code from upstream */
+  errorDetail?: string;
   /** True if account lacks quota access (403) */
   isForbidden?: boolean;
   /** Error message if fetch failed */
   error?: string;
+  /** Provider-specific remediation guidance */
+  actionHint?: string;
+  /** True when the failure is temporary and retrying later may help */
+  retryable?: boolean;
   /** True if token is expired and needs re-authentication */
   needsReauth?: boolean;
 }
@@ -295,12 +305,22 @@ export interface CodexQuotaResult {
   planType: 'free' | 'plus' | 'team' | null;
   /** Timestamp of fetch */
   lastUpdated: number;
+  /** Upstream HTTP status when available */
+  httpStatus?: number;
+  /** Stable machine-readable error code */
+  errorCode?: string;
+  /** Additional provider-specific detail/code from upstream */
+  errorDetail?: string;
   /** Error message if fetch failed */
   error?: string;
   /** Account ID (email) this quota belongs to */
   accountId?: string;
+  /** Provider-specific remediation guidance */
+  actionHint?: string;
   /** True if token is expired and needs re-authentication */
   needsReauth?: boolean;
+  /** True when the failure is temporary and retrying later may help */
+  retryable?: boolean;
   /** True if result was served from cache */
   cached?: boolean;
   /** True if account lacks quota access (403) - displayed as 0% instead of error */
@@ -353,9 +373,15 @@ export interface ClaudeQuotaResult {
   windows: ClaudeQuotaWindow[];
   coreUsage?: ClaudeCoreUsageSummary;
   lastUpdated: number;
+  httpStatus?: number;
+  errorCode?: string;
+  errorDetail?: string;
+  isForbidden?: boolean;
   error?: string;
   accountId?: string;
+  actionHint?: string;
   needsReauth?: boolean;
+  retryable?: boolean;
   /** True if result was served from cache */
   cached?: boolean;
 }
@@ -388,12 +414,24 @@ export interface GeminiCliQuotaResult {
   projectId: string | null;
   /** Timestamp of fetch */
   lastUpdated: number;
+  /** Upstream HTTP status when available */
+  httpStatus?: number;
+  /** Stable machine-readable error code */
+  errorCode?: string;
+  /** Additional provider-specific detail/code from upstream */
+  errorDetail?: string;
+  /** True if account lacks quota access (403) */
+  isForbidden?: boolean;
   /** Error message if fetch failed */
   error?: string;
   /** Account ID (email) this quota belongs to */
   accountId?: string;
+  /** Provider-specific remediation guidance */
+  actionHint?: string;
   /** True if token is expired and needs re-authentication */
   needsReauth?: boolean;
+  /** True when the failure is temporary and retrying later may help */
+  retryable?: boolean;
   /** True if result was served from cache */
   cached?: boolean;
 }
@@ -435,12 +473,24 @@ export interface GhcpQuotaResult {
   };
   /** Timestamp of fetch */
   lastUpdated: number;
+  /** Upstream HTTP status when available */
+  httpStatus?: number;
+  /** Stable machine-readable error code */
+  errorCode?: string;
+  /** Additional provider-specific detail/code from upstream */
+  errorDetail?: string;
+  /** True if account lacks quota access (403) */
+  isForbidden?: boolean;
   /** Error message if fetch failed */
   error?: string;
   /** Account ID this quota belongs to */
   accountId?: string;
+  /** Provider-specific remediation guidance */
+  actionHint?: string;
   /** True if token is expired and needs re-authentication */
   needsReauth?: boolean;
+  /** True when the failure is temporary and retrying later may help */
+  retryable?: boolean;
   /** True if result was served from cache */
   cached?: boolean;
 }

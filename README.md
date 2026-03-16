@@ -55,7 +55,7 @@ ccs config
 
 Dashboard updates hub: `http://localhost:3000/updates`
 
-Want to run the dashboard in Docker? See `docker/README.md`.
+Want to run the dashboard in Docker or pull the prebuilt image? See `docker/README.md`.
 
 ### 3. Configure Your Accounts
 
@@ -119,6 +119,8 @@ The dashboard provides visual management for all account types:
 **Alibaba Coding Plan Integration**: Configure via `ccs api create --preset alibaba-coding-plan` (or preset alias `alibaba`) with Coding Plan keys (`sk-sp-...`) and endpoint `https://coding-intl.dashscope.aliyuncs.com/apps/anthropic`.
 
 **Ollama Integration**: Run local open-source models (qwen3-coder, gpt-oss:20b) with full privacy. Use `ccs api create --preset ollama` - requires [Ollama v0.14.0+](https://ollama.com) installed. For cloud models, use `ccs api create --preset ollama-cloud`.
+
+> **Copilot config behavior:** Opening the dashboard or other read-only Copilot endpoints does not rewrite `~/.ccs/copilot.settings.json`. If CCS detects deprecated Copilot model IDs such as `raptor-mini`, it shows warnings immediately and only persists replacements when you explicitly save the Copilot configuration.
 
 **llama.cpp Integration**: Run a local llama.cpp OpenAI-compatible server and create a profile with `ccs api create --preset llamacpp`. CCS defaults to `http://127.0.0.1:8080`, matching the standard llama.cpp server port.
 
@@ -257,6 +259,44 @@ Defaults:
 - Dashboard page: `ccs config` -> `Cursor IDE`
 
 Detailed guide: [`docs/cursor-integration.md`](./docs/cursor-integration.md)
+
+### Claude IDE Extension Setup
+
+CCS now has a native setup flow for the Anthropic Claude extension in VS Code and compatible hosts.
+Use the same resolver in both the CLI and dashboard, so API profiles, CCS auth accounts,
+CLIProxy-backed profiles, Copilot, and default-profile continuity all map to the correct env shape.
+
+Preferred shared-settings path:
+
+```bash
+ccs persist glm
+ccs persist work
+ccs persist default
+```
+
+This writes the resolved setup to `~/.claude/settings.json`, which is the best option when you want
+the Claude CLI and the IDE extension to share one CCS profile.
+
+IDE-local snippet path:
+
+```bash
+ccs env glm --format claude-extension --ide vscode
+ccs env work --format claude-extension --ide cursor
+ccs env default --format claude-extension --ide windsurf
+```
+
+This prints a copy-ready `settings.json` snippet for the installed Claude extension host:
+
+- `vscode` / `cursor`: `claudeCode.environmentVariables` plus `claudeCode.disableLoginPrompt`
+- `windsurf`: `claude-code.environmentVariables`
+
+Account and continuity-aware flows use `CLAUDE_CONFIG_DIR` instead of Anthropic transport env vars.
+CLIProxy and Copilot flows emit the required `ANTHROPIC_*` variables and still depend on their local
+proxy/daemon being reachable.
+
+Dashboard parity:
+- `ccs config` -> `Claude Extension`
+- Select a CCS profile and IDE host to copy either the shared `~/.claude/settings.json` payload or the IDE-local extension snippet
 
 ### Parallel Workflows
 
@@ -530,6 +570,26 @@ ccs codex --proxy-host proxy.example.com --proxy-protocol https
 | `--remote-only` | Fail if remote unreachable (no fallback) |
 
 See [Remote Proxy documentation](https://docs.ccs.kaitran.ca/features/remote-proxy) for detailed setup.
+
+<br>
+
+## Standard Fetch Proxy
+
+CCS also respects standard proxy environment variables for fetch-based quota, dashboard,
+and provider management requests:
+
+```bash
+export HTTPS_PROXY=http://proxy.example.com:8080
+export HTTP_PROXY=http://proxy.example.com:8080
+export ALL_PROXY=http://proxy.example.com:8080
+export NO_PROXY=localhost,127.0.0.1,.internal.corp
+```
+
+Notes:
+- CCS automatically bypasses loopback addresses (`localhost`, `127.0.0.1`, `::1`) for its own local services.
+- If `HTTPS_PROXY` is unset, CCS falls back to `HTTP_PROXY` for HTTPS fetches.
+- `ALL_PROXY` is used when protocol-specific proxy variables are not configured.
+- Proxy URLs must use `http://` or `https://`.
 
 <br>
 

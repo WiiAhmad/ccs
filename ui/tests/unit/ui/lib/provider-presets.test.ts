@@ -28,6 +28,10 @@ describe('resolvePresetApiKeyValue', () => {
 });
 
 describe('provider preset metadata', () => {
+  it('maps legacy glmt preset requests to glm', () => {
+    expect(getPresetById('glmt')?.id).toBe('glm');
+  });
+
   it('keeps Anthropic direct last in the recommended order', () => {
     const recommendedPresetIds = getPresetsByCategory('recommended').map((preset) => preset.id);
     expect(recommendedPresetIds.at(-1)).toBe('anthropic');

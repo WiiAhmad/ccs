@@ -1,7 +1,7 @@
 import { discoverApiProfileOrphans, registerApiProfileOrphans } from '../../api/services';
 import { color, fail, header, info, initUI, ok, table, warn } from '../../utils/ui';
 import { hasAnyFlag } from '../arg-extractor';
-import { API_KNOWN_FLAGS, parseOptionalTargetFlag } from './shared';
+import { API_KNOWN_FLAGS, collectUnexpectedApiArgs, parseOptionalTargetFlag } from './shared';
 
 export async function handleApiDiscoverCommand(args: string[]): Promise<void> {
   await initUI();
@@ -12,6 +12,15 @@ export async function handleApiDiscoverCommand(args: string[]): Promise<void> {
   const targetParsed = parseOptionalTargetFlag(args, [...API_KNOWN_FLAGS, '--register', '--json']);
   if (targetParsed.errors.length > 0) {
     targetParsed.errors.forEach((errorMessage) => console.log(fail(errorMessage)));
+    process.exit(1);
+  }
+
+  const syntax = collectUnexpectedApiArgs(targetParsed.remainingArgs, {
+    knownFlags: ['--register', '--json', '--force'],
+    maxPositionals: 0,
+  });
+  if (syntax.errors.length > 0) {
+    syntax.errors.forEach((errorMessage) => console.log(fail(errorMessage)));
     process.exit(1);
   }
 

@@ -21,8 +21,8 @@ beforeEach(() => {
   }));
 
   mock.module('../../../src/commands/api-command/list-command', () => ({
-    handleApiListCommand: async () => {
-      calls.push('list');
+    handleApiListCommand: async (args: string[]) => {
+      calls.push(`list:${args.join(' ')}`);
     },
   }));
 
@@ -81,6 +81,30 @@ describe('api-command router', () => {
     await handleApiCommand(['rm', 'profile-a']);
 
     expect(calls).toEqual(['remove:profile-a']);
+  });
+
+  it('forwards list arguments to the handler for validation', async () => {
+    const handleApiCommand = await loadHandleApiCommand();
+
+    await handleApiCommand(['list', 'unexpected']);
+
+    expect(calls).toEqual(['list:unexpected']);
+  });
+
+  it('routes hardened subcommands through their handlers', async () => {
+    const handleApiCommand = await loadHandleApiCommand();
+
+    await handleApiCommand(['discover', '--json']);
+    await handleApiCommand(['copy', 'source', 'dest']);
+    await handleApiCommand(['export', 'profile-a', '--out', 'backup.json']);
+    await handleApiCommand(['import', 'bundle.json', '--force']);
+
+    expect(calls).toEqual([
+      'discover:--json',
+      'copy:source dest',
+      'export:profile-a --out backup.json',
+      'import:bundle.json --force',
+    ]);
   });
 
   it('delegates unknown commands to the shared unknown handler', async () => {

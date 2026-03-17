@@ -1,9 +1,10 @@
 import type { TargetType } from '../../targets/target-adapter';
 import { fail } from '../../utils/ui';
-import { extractOption, hasAnyFlag } from '../arg-extractor';
+import { extractOption, hasAnyFlag, scanCommandArgs } from '../arg-extractor';
 
 export interface ApiCommandArgs {
   name?: string;
+  positionals: string[];
   baseUrl?: string;
   apiKey?: string;
   model?: string;
@@ -26,6 +27,10 @@ export const API_KNOWN_FLAGS: readonly string[] = [...API_BOOLEAN_FLAGS, ...API_
 
 const API_VALUE_FLAG_SET = new Set<string>(API_VALUE_FLAGS);
 
+export interface ParseApiCommandArgsOptions {
+  maxPositionals?: number;
+}
+
 export function sanitizeHelpText(value: string): string {
   return value
     .replace(/[\r\n\t]+/g, ' ')
@@ -38,13 +43,14 @@ function applyRepeatedOption(
   args: string[],
   flags: readonly string[],
   onValue: (value: string) => void,
-  onMissing: () => void
+  onMissing: () => void,
+  allowDashValue = false
 ): string[] {
   let remaining = [...args];
 
   while (true) {
     const extracted = extractOption(remaining, flags, {
-      allowDashValue: true,
+      allowDashValue,
       knownFlags: API_KNOWN_FLAGS,
     });
     if (!extracted.found) {
@@ -100,7 +106,6 @@ export function parseOptionalTargetFlag(
   knownFlags: readonly string[]
 ): { target?: TargetType; remainingArgs: string[]; errors: string[] } {
   const extracted = extractOption(args, ['--target'], {
-    allowDashValue: true,
     knownFlags,
   });
   if (!extracted.found) {
@@ -121,8 +126,35 @@ export function parseOptionalTargetFlag(
   return { target, remainingArgs: extracted.remainingArgs, errors: [] };
 }
 
-export function parseApiCommandArgs(args: string[]): ApiCommandArgs {
+export function collectUnexpectedApiArgs(
+  args: string[],
+  options: {
+    knownFlags?: readonly string[];
+    maxPositionals: number;
+  }
+): { positionals: string[]; errors: string[] } {
+  const scanned = scanCommandArgs(args, {
+    knownFlags: options.knownFlags ?? [],
+  });
+  const errors = scanned.unknownFlags.map((flag) => `Unknown option: ${flag}`);
+  if (scanned.positionals.length > options.maxPositionals) {
+    errors.push(
+      `Unexpected arguments: ${scanned.positionals.slice(options.maxPositionals).join(' ')}`
+    );
+  }
+
+  return {
+    positionals: scanned.positionals,
+    errors,
+  };
+}
+
+export function parseApiCommandArgs(
+  args: string[],
+  options: ParseApiCommandArgsOptions = {}
+): ApiCommandArgs {
   const result: ApiCommandArgs = {
+    positionals: [],
     force: hasAnyFlag(args, ['--force']),
     yes: hasAnyFlag(args, ['--yes', '-y']),
     errors: [],
@@ -138,7 +170,8 @@ export function parseApiCommandArgs(args: string[]): ApiCommandArgs {
     },
     () => {
       result.errors.push('Missing value for --base-url');
-    }
+    },
+    false
   );
 
   remaining = applyRepeatedOption(
@@ -149,7 +182,8 @@ export function parseApiCommandArgs(args: string[]): ApiCommandArgs {
     },
     () => {
       result.errors.push('Missing value for --api-key');
-    }
+    },
+    false
   );
 
   remaining = applyRepeatedOption(
@@ -160,7 +194,8 @@ export function parseApiCommandArgs(args: string[]): ApiCommandArgs {
     },
     () => {
       result.errors.push('Missing value for --model');
-    }
+    },
+    true
   );
 
   remaining = applyRepeatedOption(
@@ -171,7 +206,8 @@ export function parseApiCommandArgs(args: string[]): ApiCommandArgs {
     },
     () => {
       result.errors.push('Missing value for --preset');
-    }
+    },
+    false
   );
 
   remaining = applyRepeatedOption(
@@ -187,10 +223,17 @@ export function parseApiCommandArgs(args: string[]): ApiCommandArgs {
     },
     () => {
       result.errors.push('Missing value for --target');
-    }
+    },
+    false
   );
 
-  result.name = extractPositionalArgs(remaining)[0];
+  const unexpected = collectUnexpectedApiArgs(remaining, {
+    knownFlags: API_BOOLEAN_FLAGS,
+    maxPositionals: options.maxPositionals ?? 1,
+  });
+  result.positionals = unexpected.positionals;
+  result.name = unexpected.positionals[0];
+  result.errors.push(...unexpected.errors);
   return result;
 }
 

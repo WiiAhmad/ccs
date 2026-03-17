@@ -80,14 +80,16 @@ beforeEach(() => {
     }),
   }));
 
-  mock.module('../../../src/utils/ui', () => ({
+  const uiModule = {
     initUI: async () => {},
     header: (message: string) => message,
     ok: (message: string) => message,
     info: (message: string) => message,
     warn: (message: string) => message,
     fail: (message: string) => message,
-  }));
+  };
+  mock.module('../../../src/utils/ui', () => uiModule);
+  mock.module('../../../src/utils/ui.ts', () => uiModule);
 
   mock.module('../../../src/commands/config-dashboard-host', () => ({
     normalizeDashboardHost: (host: string | undefined) => {
@@ -147,6 +149,19 @@ async function loadHandleConfigCommand() {
 }
 
 describe('config command dashboard startup', () => {
+  it('shows help for literal help token instead of starting the dashboard', async () => {
+    const handleConfigCommand = await loadHandleConfigCommand();
+    process.exit = ((code?: number) => {
+      throw new Error(`process.exit(${code ?? 0})`);
+    }) as typeof process.exit;
+
+    await expect(handleConfigCommand(['help'])).rejects.toThrow('process.exit(0)');
+
+    expect(startServerCalls).toHaveLength(0);
+    expect(resolveDashboardUrlsCalls).toHaveLength(0);
+    expect(logLines.join('\n')).toContain('Usage: ccs config [command] [options]');
+  });
+
   it('routes auth subcommands before dashboard startup', async () => {
     const handleConfigCommand = await loadHandleConfigCommand();
 
@@ -155,6 +170,19 @@ describe('config command dashboard startup', () => {
     expect(configAuthCalls).toEqual([['setup']]);
     expect(startServerCalls).toHaveLength(0);
     expect(resolveDashboardUrlsCalls).toHaveLength(0);
+  });
+
+  it('rejects unknown config subcommands before dashboard startup', async () => {
+    const handleConfigCommand = await loadHandleConfigCommand();
+    process.exit = ((code?: number) => {
+      throw new Error(`process.exit(${code ?? 0})`);
+    }) as typeof process.exit;
+
+    await expect(handleConfigCommand(['bogus'])).rejects.toThrow('process.exit(1)');
+
+    expect(startServerCalls).toHaveLength(0);
+    expect(resolveDashboardUrlsCalls).toHaveLength(0);
+    expect(errorLines.join('\n')).toContain('Unexpected arguments: bogus');
   });
 
   it('keeps the default startup path free of an explicit host override', async () => {

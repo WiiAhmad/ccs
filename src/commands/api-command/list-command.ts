@@ -1,8 +1,17 @@
 import { listApiProfiles, isUsingUnifiedConfig } from '../../api/services';
-import { dim, header, initUI, subheader, table, warn, color } from '../../utils/ui';
+import { color, dim, fail, header, initUI, subheader, table, warn } from '../../utils/ui';
+import { collectUnexpectedApiArgs } from './shared';
 
-export async function handleApiListCommand(): Promise<void> {
+export async function handleApiListCommand(args: string[] = []): Promise<void> {
   await initUI();
+  const syntax = collectUnexpectedApiArgs(args, {
+    maxPositionals: 0,
+  });
+  if (syntax.errors.length > 0) {
+    syntax.errors.forEach((errorMessage) => console.log(fail(errorMessage)));
+    process.exit(1);
+  }
+
   console.log(header('CCS API Profiles'));
   console.log('');
 

@@ -1,16 +1,15 @@
 import { copyApiProfile } from '../../api/services';
 import { fail, info, initUI, ok, warn } from '../../utils/ui';
 import { InteractivePrompt } from '../../utils/prompt';
-import { exitOnApiCommandErrors, extractPositionalArgs, parseApiCommandArgs } from './shared';
+import { exitOnApiCommandErrors, parseApiCommandArgs } from './shared';
 
 export async function handleApiCopyCommand(args: string[]): Promise<void> {
   await initUI();
-  const parsedArgs = parseApiCommandArgs(args);
+  const parsedArgs = parseApiCommandArgs(args, { maxPositionals: 2 });
   exitOnApiCommandErrors(parsedArgs.errors);
 
-  const positionals = extractPositionalArgs(args);
-  const source = positionals[0];
-  let destination = positionals[1];
+  const source = parsedArgs.positionals[0];
+  let destination = parsedArgs.positionals[1];
 
   if (!source) {
     console.log(fail('Source profile is required. Usage: ccs api copy <source> <destination>'));

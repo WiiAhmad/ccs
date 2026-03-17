@@ -12,7 +12,7 @@ export { parseApiCommandArgs } from './shared';
 
 const API_COMMAND_ROUTES: readonly NamedCommandRoute[] = [
   { name: 'create', handle: handleApiCreateCommand },
-  { name: 'list', handle: async () => handleApiListCommand() },
+  { name: 'list', handle: handleApiListCommand },
   { name: 'discover', handle: handleApiDiscoverCommand },
   { name: 'copy', handle: handleApiCopyCommand },
   { name: 'export', handle: handleApiExportCommand },

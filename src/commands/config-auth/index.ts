@@ -15,26 +15,38 @@ import { handleSetup } from './setup-command';
 import { handleShow } from './show-command';
 import { handleDisable } from './disable-command';
 
+async function ensureNoConfigAuthArgs(command: string, args: string[]): Promise<void> {
+  if (args.length === 0) {
+    return;
+  }
+
+  await initUI();
+  console.log(fail(`Unexpected arguments for "config auth ${command}": ${args.join(' ')}`));
+  console.log('');
+  console.log('Run for help:');
+  console.log(`  ${color('ccs config auth --help', 'command')}`);
+  process.exit(1);
+}
+
+function createZeroArgConfigAuthRoute(
+  name: string,
+  handler: () => Promise<unknown>,
+  aliases?: readonly string[]
+): NamedCommandRoute {
+  return {
+    name,
+    aliases,
+    handle: async (args) => {
+      await ensureNoConfigAuthArgs(name, args);
+      await handler();
+    },
+  };
+}
+
 const CONFIG_AUTH_ROUTES: readonly NamedCommandRoute[] = [
-  {
-    name: 'setup',
-    handle: async () => {
-      await handleSetup();
-    },
-  },
-  {
-    name: 'show',
-    aliases: ['status'],
-    handle: async () => {
-      await handleShow();
-    },
-  },
-  {
-    name: 'disable',
-    handle: async () => {
-      await handleDisable();
-    },
-  },
+  createZeroArgConfigAuthRoute('setup', handleSetup),
+  createZeroArgConfigAuthRoute('show', handleShow, ['status']),
+  createZeroArgConfigAuthRoute('disable', handleDisable),
 ];
 
 /**

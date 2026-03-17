@@ -3,7 +3,7 @@ import * as path from 'path';
 import { exportApiProfile } from '../../api/services';
 import { fail, initUI, ok, warn } from '../../utils/ui';
 import { extractOption, hasAnyFlag } from '../arg-extractor';
-import { API_KNOWN_FLAGS, extractPositionalArgs } from './shared';
+import { collectUnexpectedApiArgs } from './shared';
 
 export async function handleApiExportCommand(args: string[]): Promise<void> {
   await initUI();
@@ -11,14 +11,24 @@ export async function handleApiExportCommand(args: string[]): Promise<void> {
 
   const outExtracted = extractOption(args, ['--out'], {
     allowDashValue: true,
-    knownFlags: [...API_KNOWN_FLAGS, '--out', '--include-secrets'],
+    allowLongDashValue: true,
+    knownFlags: ['--out', '--include-secrets'],
   });
   if (outExtracted.found && (outExtracted.missingValue || !outExtracted.value)) {
     console.log(fail('Missing value for --out'));
     process.exit(1);
   }
 
-  const name = extractPositionalArgs(outExtracted.remainingArgs)[0];
+  const syntax = collectUnexpectedApiArgs(outExtracted.remainingArgs, {
+    knownFlags: ['--include-secrets'],
+    maxPositionals: 1,
+  });
+  if (syntax.errors.length > 0) {
+    syntax.errors.forEach((errorMessage) => console.log(fail(errorMessage)));
+    process.exit(1);
+  }
+
+  const name = syntax.positionals[0];
   if (!name) {
     console.log(fail('Profile name is required. Usage: ccs api export <name> [--out <file>]'));
     process.exit(1);

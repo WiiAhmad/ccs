@@ -35,4 +35,16 @@ describe('config command options parser', () => {
     expect(accepted.options.port).toBe(65535);
     expect(rejected.error).toBe('Invalid port number');
   });
+
+  it('rejects unknown options', () => {
+    const result = parseConfigCommandArgs(['--hst', '0.0.0.0']);
+
+    expect(result.error).toBe('Unexpected arguments: --hst 0.0.0.0');
+  });
+
+  it('rejects unexpected trailing positionals', () => {
+    const result = parseConfigCommandArgs(['--port', '3000', 'extra']);
+
+    expect(result.error).toBe('Unexpected arguments: extra');
+  });
 });

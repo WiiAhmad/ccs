@@ -51,6 +51,12 @@ const CONFIG_SUBCOMMAND_ROUTES: readonly NamedCommandRoute[] = [
  * Handle config command
  */
 export async function handleConfigCommand(args: string[]): Promise<void> {
+  if (args.length === 1 && args[0] === 'help') {
+    await initUI();
+    showConfigCommandHelp();
+    process.exit(0);
+  }
+
   const subcommand = args[0]?.startsWith('-')
     ? undefined
     : resolveNamedCommand(args[0], CONFIG_SUBCOMMAND_ROUTES);

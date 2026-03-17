@@ -1,4 +1,4 @@
-import { extractOption, hasAnyFlag } from './arg-extractor';
+import { extractOption, hasAnyFlag, scanCommandArgs } from './arg-extractor';
 
 const CONFIG_COMMAND_FLAGS = ['--help', '-h', '--port', '-p', '--host', '-H', '--dev'] as const;
 
@@ -13,6 +13,10 @@ export interface ConfigCommandParseResult {
   help: boolean;
   error?: string;
   options: ConfigCommandOptions;
+}
+
+function formatUnexpectedArgsError(tokens: string[]): string {
+  return `Unexpected arguments: ${tokens.join(' ')}`;
 }
 
 export function parseConfigCommandArgs(args: string[]): ConfigCommandParseResult {
@@ -55,6 +59,18 @@ export function parseConfigCommandArgs(args: string[]): ConfigCommandParseResult
   }
 
   options.dev = hasAnyFlag(hostOption.remainingArgs, ['--dev']);
+
+  const unexpected = scanCommandArgs(hostOption.remainingArgs, {
+    knownFlags: ['--dev'],
+  });
+  const unexpectedTokens = [...unexpected.unknownFlags, ...unexpected.positionals];
+  if (unexpectedTokens.length > 0) {
+    return {
+      help: false,
+      error: formatUnexpectedArgsError(unexpectedTokens),
+      options,
+    };
+  }
 
   return { help: false, options };
 }

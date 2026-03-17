@@ -3,7 +3,7 @@ import { importApiProfileBundle, type ProfileValidationIssue } from '../../api/s
 import { color, fail, info, initUI, ok, warn } from '../../utils/ui';
 import { InteractivePrompt } from '../../utils/prompt';
 import { extractOption, hasAnyFlag } from '../arg-extractor';
-import { API_KNOWN_FLAGS, extractPositionalArgs, parseOptionalTargetFlag } from './shared';
+import { collectUnexpectedApiArgs, parseOptionalTargetFlag } from './shared';
 
 function renderValidationIssue(issue: ProfileValidationIssue): void {
   const indicator = issue.level === 'error' ? color('[X]', 'error') : color('[!]', 'warning');
@@ -16,8 +16,7 @@ export async function handleApiImportCommand(args: string[]): Promise<void> {
   const yes = hasAnyFlag(args, ['--yes', '-y']);
 
   const nameExtracted = extractOption(args, ['--name'], {
-    allowDashValue: true,
-    knownFlags: [...API_KNOWN_FLAGS, '--name'],
+    knownFlags: ['--name', '--target', '--force', '--yes', '-y'],
   });
   if (nameExtracted.found && (nameExtracted.missingValue || !nameExtracted.value)) {
     console.log(fail('Missing value for --name'));
@@ -25,15 +24,27 @@ export async function handleApiImportCommand(args: string[]): Promise<void> {
   }
 
   const targetParsed = parseOptionalTargetFlag(nameExtracted.remainingArgs, [
-    ...API_KNOWN_FLAGS,
     '--name',
+    '--target',
+    '--force',
+    '--yes',
+    '-y',
   ]);
   if (targetParsed.errors.length > 0) {
     targetParsed.errors.forEach((errorMessage) => console.log(fail(errorMessage)));
     process.exit(1);
   }
 
-  const importPath = extractPositionalArgs(targetParsed.remainingArgs)[0];
+  const syntax = collectUnexpectedApiArgs(targetParsed.remainingArgs, {
+    knownFlags: ['--force', '--yes', '-y'],
+    maxPositionals: 1,
+  });
+  if (syntax.errors.length > 0) {
+    syntax.errors.forEach((errorMessage) => console.log(fail(errorMessage)));
+    process.exit(1);
+  }
+
+  const importPath = syntax.positionals[0];
   if (!importPath) {
     console.log(
       fail('Import file path is required. Usage: ccs api import <file> [--name <new-name>]')

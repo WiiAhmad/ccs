@@ -149,7 +149,7 @@ class SharedManager {
   /**
    * Detect circular symlink before creation
    */
-  private detectCircularSymlink(target: string, linkPath: string): boolean {
+  private detectCircularSymlink(target: string): boolean {
     // Check if target exists and is symlink
     if (!fs.existsSync(target)) {
       return false;
@@ -165,15 +165,13 @@ class SharedManager {
       const targetLink = fs.readlinkSync(target);
       const resolvedTarget = path.resolve(path.dirname(target), targetLink);
 
-      // Check if target points back to our shared dir or link path
+      // Only treat targets inside the managed shared root as circular.
+      // Existing shared symlinks may already resolve through ~/.claude/ to an
+      // external repo, which is a supported upgrade path rather than a loop.
       const sharedDir = this.resolveCanonicalPath(path.join(getCcsDir(), 'shared'));
       const canonicalResolvedTarget = this.resolveCanonicalPath(resolvedTarget);
-      const canonicalLinkPath = this.resolveCanonicalPath(linkPath);
 
-      if (
-        this.isPathWithinDirectory(canonicalResolvedTarget, sharedDir) ||
-        canonicalResolvedTarget === canonicalLinkPath
-      ) {
+      if (this.isPathWithinDirectory(canonicalResolvedTarget, sharedDir)) {
         console.log(warn(`Circular symlink detected: ${target} → ${resolvedTarget}`));
         return true;
       }
@@ -219,7 +217,7 @@ class SharedManager {
       }
 
       // Check for circular symlink
-      if (this.detectCircularSymlink(claudePath, sharedPath)) {
+      if (this.detectCircularSymlink(claudePath)) {
         console.log(warn(`Skipping ${item.name}: circular symlink detected`));
         continue;
       }

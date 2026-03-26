@@ -296,9 +296,7 @@ export function setConfiguredOfficialChannelToken(
     throw new Error(`${envKey} cannot be empty or multiline.`);
   }
   if (normalized.length > MAX_OFFICIAL_CHANNEL_TOKEN_LENGTH) {
-    throw new Error(
-      `${envKey} cannot exceed ${MAX_OFFICIAL_CHANNEL_TOKEN_LENGTH} characters.`
-    );
+    throw new Error(`${envKey} cannot exceed ${MAX_OFFICIAL_CHANNEL_TOKEN_LENGTH} characters.`);
   }
 
   const envPath = getOfficialChannelEnvPath(channelId);

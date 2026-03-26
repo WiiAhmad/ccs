@@ -1,3 +1,37 @@
+## [7.59.0](https://github.com/kaitranntt/ccs/compare/v7.58.0...v7.59.0) (2026-03-26)
+
+### Features
+
+* **auth:** let power user mode skip Gemini auth gate ([ce4401e](https://github.com/kaitranntt/ccs/commit/ce4401e84ea11a0b5518b9eca4d4a44a304e8878))
+
+### Bug Fixes
+
+* **ci:** resolve flaky api-command module resolution and migrate to self-hosted runner ([41a31c8](https://github.com/kaitranntt/ccs/commit/41a31c8a4ffb49c6cf046de0b437961f4422a4e1))
+* **cliproxy:** harden gemini quota error fallbacks ([31b7d45](https://github.com/kaitranntt/ccs/commit/31b7d45b58a6929f168a25f724c56ccbd1dcc9fa))
+* **cliproxy:** preserve auth-file source fallback ([63c8ec5](https://github.com/kaitranntt/ccs/commit/63c8ec5d7c8d5830bd514f812081fb31804564a8))
+* **cliproxy:** preserve explicit Claude long-context intent ([c05189b](https://github.com/kaitranntt/ccs/commit/c05189b4b1e2d90ee6bb88a4024feef1f8dbe1b1)), closes [#789](https://github.com/kaitranntt/ccs/issues/789)
+* **cliproxy:** restore live monitor provider attribution ([368a625](https://github.com/kaitranntt/ccs/commit/368a625d925a176a42e426d363aeb355a4f0657b))
+* **cliproxy:** scope account stats by provider ([75ccbb3](https://github.com/kaitranntt/ccs/commit/75ccbb3ad13ee6d8b84ad7ef3aacb6b8994256c5))
+* **cliproxy:** surface gemini quota failure details ([99f78f1](https://github.com/kaitranntt/ccs/commit/99f78f156a8bc329ee6524f2113a5fc643c0e131))
+* **cliproxy:** surface quota metadata in CLI ([19f6b3c](https://github.com/kaitranntt/ccs/commit/19f6b3c4e65c514b42b331380065f34db9dc5405))
+* **tests:** stabilize command help CI validation ([be4ba13](https://github.com/kaitranntt/ccs/commit/be4ba13e9654f177a417a7956228653efe1a6210))
+* **ui:** clarify antigravity and gemini power mode copy ([4d49d13](https://github.com/kaitranntt/ccs/commit/4d49d13931537ad32a5588880e09212696354609))
+* **ui:** constrain bounded code editor scroll viewports ([aeab284](https://github.com/kaitranntt/ccs/commit/aeab2840de0c69122c49dba1b6f286597e4d606a))
+* **ui:** harden power user mode auth checks ([604f9fc](https://github.com/kaitranntt/ccs/commit/604f9fc78a72b6ee76cf0ecc44ea91a372c4a114))
+* **ui:** resolve cliproxy account stats by provider ([1edc103](https://github.com/kaitranntt/ccs/commit/1edc10362adf1be3a6f06041929e2548614c73a6))
+* **ui:** restore scrolling in bounded code editors ([44d4df1](https://github.com/kaitranntt/ccs/commit/44d4df12544a02572e5c1c68f70f73c80795fb29))
+
+### Tests
+
+* **cliproxy:** cover Claude long-context parity flows ([5e11bba](https://github.com/kaitranntt/ccs/commit/5e11bba5149d061879002ad88ca91f404c09522a)), closes [#789](https://github.com/kaitranntt/ccs/issues/789)
+* **ui:** cover bounded code editor scroll mode ([823cf96](https://github.com/kaitranntt/ccs/commit/823cf96e7788cc9f69d65b97688c56df84e6b632))
+* **ui:** cover bounded editor height contracts ([92d067d](https://github.com/kaitranntt/ccs/commit/92d067d0622c9a02c11b4b20b7416901a0929b4f))
+* **ui:** cover Gemini power user auth bypass ([a15c729](https://github.com/kaitranntt/ccs/commit/a15c729079643344d130d4d522de3e874b6d0d03))
+
+### CI
+
+* **ai-review:** add --bare flag to prevent CLAUDE.md pollution in reviews ([57019c1](https://github.com/kaitranntt/ccs/commit/57019c1105e92f74ca4e556c7a3a03f7468b853e))
+
 ## [7.58.0](https://github.com/kaitranntt/ccs/compare/v7.57.2...v7.58.0) (2026-03-26)
 
 ### Features

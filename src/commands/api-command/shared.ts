@@ -294,9 +294,10 @@ export function applyClaudeExtendedContextPreference(
       continue;
     }
 
-    nextModels[key] = enabled && likelySupportsClaudeExtendedContext(value)
-      ? applyExtendedContextSuffix(value)
-      : stripExtendedContextSuffix(value);
+    nextModels[key] =
+      enabled && likelySupportsClaudeExtendedContext(value)
+        ? applyExtendedContextSuffix(value)
+        : stripExtendedContextSuffix(value);
   }
 
   return nextModels;

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
 import { showApiCommandHelp } from '../../../src/commands/api-command/help';
 import { handleHelpCommand } from '../../../src/commands/help-command';
@@ -8,19 +8,9 @@ function stripAnsi(input: string): string {
 }
 
 describe('help command parity', () => {
-  const originalLog = console.log;
-
-  afterEach(() => {
-    console.log = originalLog;
-  });
-
   test('root help documents cliproxy provider filter under quota command', async () => {
     const lines: string[] = [];
-    console.log = (...args: unknown[]) => {
-      lines.push(args.map((arg) => String(arg)).join(' '));
-    };
-
-    await handleHelpCommand();
+    await handleHelpCommand((line) => lines.push(line));
 
     const rendered = stripAnsi(lines.join('\n'));
     expect(rendered.includes('ccs cliproxy status [provider]')).toBe(false);
@@ -31,11 +21,7 @@ describe('help command parity', () => {
 
   test('root help documents llama.cpp as a local API profile', async () => {
     const lines: string[] = [];
-    console.log = (...args: unknown[]) => {
-      lines.push(args.map((arg) => String(arg)).join(' '));
-    };
-
-    await handleHelpCommand();
+    await handleHelpCommand((line) => lines.push(line));
 
     const rendered = stripAnsi(lines.join('\n'));
     expect(rendered.includes('ccs llamacpp')).toBe(true);
@@ -44,11 +30,7 @@ describe('help command parity', () => {
 
   test('root help no longer markets glmt as a supported profile', async () => {
     const lines: string[] = [];
-    console.log = (...args: unknown[]) => {
-      lines.push(args.map((arg) => String(arg)).join(' '));
-    };
-
-    await handleHelpCommand();
+    await handleHelpCommand((line) => lines.push(line));
 
     const rendered = stripAnsi(lines.join('\n'));
     expect(rendered.includes('ccs glmt')).toBe(false);
@@ -57,11 +39,7 @@ describe('help command parity', () => {
 
   test('root help documents Claude IDE extension setup surfaces', async () => {
     const lines: string[] = [];
-    console.log = (...args: unknown[]) => {
-      lines.push(args.map((arg) => String(arg)).join(' '));
-    };
-
-    await handleHelpCommand();
+    await handleHelpCommand((line) => lines.push(line));
 
     const rendered = stripAnsi(lines.join('\n'));
     expect(rendered.includes('Claude IDE Extension setup page')).toBe(true);
@@ -75,11 +53,7 @@ describe('help command parity', () => {
 
   test('root help documents dashboard host binding example', async () => {
     const lines: string[] = [];
-    console.log = (...args: unknown[]) => {
-      lines.push(args.map((arg) => String(arg)).join(' '));
-    };
-
-    await handleHelpCommand();
+    await handleHelpCommand((line) => lines.push(line));
 
     const rendered = stripAnsi(lines.join('\n'));
     expect(rendered.includes('ccs config --host 0.0.0.0')).toBe(true);
@@ -88,48 +62,36 @@ describe('help command parity', () => {
 
   test('root help documents official channels native-only scope and process-env tokens', async () => {
     const lines: string[] = [];
-    console.log = (...args: unknown[]) => {
-      lines.push(args.map((arg) => String(arg)).join(' '));
-    };
-
-    await handleHelpCommand();
+    await handleHelpCommand((line) => lines.push(line));
 
     const rendered = stripAnsi(lines.join('\n'));
     expect(rendered.includes('Dashboard -> Settings -> Channels (fastest path)')).toBe(true);
     expect(
-      rendered.includes('Fastest path: turn on the channel, save the token if needed, then run ccs.')
+      rendered.includes(
+        'Fastest path: turn on the channel, save the token if needed, then run ccs.'
+      )
     ).toBe(true);
     expect(rendered.includes('Not supported for ccs glm')).toBe(true);
-    expect(rendered.includes('Current-process TELEGRAM_BOT_TOKEN / DISCORD_BOT_TOKEN also work')).toBe(
-      true
-    );
+    expect(
+      rendered.includes('Current-process TELEGRAM_BOT_TOKEN / DISCORD_BOT_TOKEN also work')
+    ).toBe(true);
   });
 
   test('root help explains Claude [1m] as an explicit CCS suffix with upstream limits', async () => {
     const lines: string[] = [];
-    console.log = (...args: unknown[]) => {
-      lines.push(args.map((arg) => String(arg)).join(' '));
-    };
-
-    await handleHelpCommand();
+    await handleHelpCommand((line) => lines.push(line));
 
     const rendered = stripAnsi(lines.join('\n'));
-    expect(rendered.includes('Claude models: plain by default, opt-in with --1m or saved [1m]')).toBe(
-      true
-    );
+    expect(
+      rendered.includes('Claude models: plain by default, opt-in with --1m or saved [1m]')
+    ).toBe(true);
     expect(rendered.includes('CCS only controls the saved [1m] suffix.')).toBe(true);
-    expect(rendered.includes('return 429 extra-usage errors for long-context requests')).toBe(
-      true
-    );
+    expect(rendered.includes('return 429 extra-usage errors for long-context requests')).toBe(true);
   });
 
   test('api help documents create-time Claude [1m] flags and entitlement warning', async () => {
     const lines: string[] = [];
-    console.log = (...args: unknown[]) => {
-      lines.push(args.map((arg) => String(arg)).join(' '));
-    };
-
-    await showApiCommandHelp();
+    await showApiCommandHelp((line) => lines.push(line));
 
     const rendered = stripAnsi(lines.join('\n'));
     expect(rendered.includes('--1m / --no-1m')).toBe(true);

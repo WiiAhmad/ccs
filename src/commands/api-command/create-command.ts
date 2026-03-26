@@ -491,7 +491,9 @@ export async function handleApiCreateCommand(args: string[]): Promise<void> {
 
   if (hasClaudeMappings) {
     details += `\nLongCtx:  ${
-      shouldEnableClaudeLongContext ? 'compatible Claude mappings use [1m]' : 'standard Claude context'
+      shouldEnableClaudeLongContext
+        ? 'compatible Claude mappings use [1m]'
+        : 'standard Claude context'
     }`;
   }
 

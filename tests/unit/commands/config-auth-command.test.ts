@@ -15,20 +15,6 @@ beforeEach(() => {
     logLines.push(args.map(String).join(' '));
   };
 
-  const uiModule = {
-    initUI: async () => {},
-    header: (message: string) => message,
-    subheader: (message: string) => message,
-    color: (message: string) => message,
-    dim: (message: string) => message,
-    ok: (message: string) => message,
-    info: (message: string) => message,
-    warn: (message: string) => message,
-    fail: (message: string) => message,
-  };
-  mock.module('../../../src/utils/ui', () => uiModule);
-  mock.module('../../../src/utils/ui.ts', () => uiModule);
-
   mock.module('../../../src/commands/config-auth/setup-command', () => ({
     handleSetup: async () => {
       calls.push('setup');
@@ -55,9 +41,7 @@ afterEach(() => {
 });
 
 async function loadHandleConfigAuthCommand() {
-  const mod = await import(
-    `../../../src/commands/config-auth?test=${Date.now()}-${Math.random()}`
-  );
+  const mod = await import(`../../../src/commands/config-auth?test=${Date.now()}-${Math.random()}`);
   return mod.handleConfigAuthCommand;
 }
 

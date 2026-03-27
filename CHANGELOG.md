@@ -1,3 +1,11 @@
+## [7.60.1](https://github.com/kaitranntt/ccs/compare/v7.60.0...v7.60.1) (2026-03-27)
+
+### Hotfixes
+
+* add hotfix commit type to semantic-release config ([0473f63](https://github.com/kaitranntt/ccs/commit/0473f636237a4e7e808a576eb75525d7ed8d929b))
+* **ci:** fix AI review performance — bypass permissions, cap turns, reduce thinking ([0a7fef0](https://github.com/kaitranntt/ccs/commit/0a7fef0368b10701737d0f54f50fd1b4ed5d46f6)), closes [#818](https://github.com/kaitranntt/ccs/issues/818)
+* **ci:** increase max-turns to 30 and enforce Write tool for review output ([179fa33](https://github.com/kaitranntt/ccs/commit/179fa338b8da2b62853931218df8ce1ed34836dd)), closes [#818](https://github.com/kaitranntt/ccs/issues/818)
+
 ## [7.60.0](https://github.com/kaitranntt/ccs/compare/v7.59.0...v7.60.0) (2026-03-27)
 
 ### Features

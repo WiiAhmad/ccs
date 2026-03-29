@@ -47,8 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUsername(res.username);
       })
       .catch(() => {
-        // If auth check fails (e.g., 403 from remote access without auth configured),
-        // treat as auth required so the login page appears instead of a broken dashboard.
+        // If auth check fails (network error, server down, CORS issue),
+        // fail closed: require auth instead of granting access.
+        // Prevents silently broken dashboard when server is unreachable.
         setAuthRequired(true);
         setIsAuthenticated(false);
       })

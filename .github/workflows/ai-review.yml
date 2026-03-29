@@ -473,7 +473,7 @@ jobs:
             --bare
             --model ${{ env.REVIEW_MODEL }}
             --permission-mode bypassPermissions
-            --max-turns 20
+            --max-turns 25
 
       - name: Fallback merge (if orchestrator fails)
         if: always() && steps.claude-merge.outcome != 'cancelled'

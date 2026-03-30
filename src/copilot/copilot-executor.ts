@@ -14,7 +14,11 @@ import { ensureCopilotApi } from './copilot-package-manager';
 import { normalizeCopilotConfigWithWarnings } from './copilot-model-normalizer';
 import { CopilotStatus } from './types';
 import { fail, info, ok, warn } from '../utils/ui';
-import { getWebSearchHookEnv } from '../utils/websearch-manager';
+import {
+  getWebSearchHookEnv,
+  appendThirdPartyWebSearchToolArgs,
+  syncWebSearchMcpToConfigDir,
+} from '../utils/websearch-manager';
 import { getImageAnalysisHookEnv } from '../utils/hooks';
 import { stripClaudeCodeEnv } from '../utils/shell-executor';
 
@@ -173,9 +177,11 @@ export async function executeCopilotProfile(
   console.log(info(`Using GitHub Copilot proxy (model: ${normalizedConfig.model})`));
   console.log('');
 
+  syncWebSearchMcpToConfigDir(claudeConfigDir);
+
   // Spawn Claude CLI
   return new Promise((resolve) => {
-    const proc = spawn(claudeCliPath, claudeArgs, {
+    const proc = spawn(claudeCliPath, appendThirdPartyWebSearchToolArgs(claudeArgs), {
       stdio: 'inherit',
       env,
       shell: process.platform === 'win32',

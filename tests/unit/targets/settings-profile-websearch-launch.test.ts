@@ -92,7 +92,7 @@ exit 0
     fs.rmSync(tmpHome, { recursive: true, force: true });
   });
 
-  it('fails before Claude launch when an enabled WebSearch hook cannot be prepared', () => {
+  it('fails before Claude launch when the local WebSearch tool runtime cannot be prepared', () => {
     if (process.platform === 'win32') return;
 
     fs.writeFileSync(path.join(ccsDir, 'hooks'), 'not-a-directory', 'utf8');
@@ -100,7 +100,7 @@ exit 0
     const result = runCcs(['glm', 'smoke'], baseEnv);
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('could not prepare the profile hook for "glm"');
+    expect(result.stderr).toContain('could not prepare the local WebSearch tool');
     expect(fs.existsSync(claudeArgsLogPath)).toBe(false);
   });
 
@@ -117,7 +117,9 @@ exit 0
     const result = runCcs(['glm', 'smoke'], baseEnv);
 
     expect(result.status).toBe(0);
-    expect(result.stderr).not.toContain('could not prepare the profile hook for "glm"');
+    expect(result.stderr).not.toContain('could not prepare the local WebSearch tool');
     expect(fs.existsSync(claudeArgsLogPath)).toBe(true);
+    expect(fs.readFileSync(claudeArgsLogPath, 'utf8')).toContain('--disallowedTools');
+    expect(fs.readFileSync(claudeArgsLogPath, 'utf8')).toContain('WebSearch');
   });
 });

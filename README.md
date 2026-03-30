@@ -630,18 +630,18 @@ Without Developer Mode, CCS falls back to copying directories.
 
 ## WebSearch
 
-Third-party profiles (Gemini, Codex, GLM, etc.) cannot use Anthropic's native WebSearch. CCS intercepts those requests and resolves them through real local search backends instead of depending on another model CLI to do the search.
+Third-party profiles (Gemini, Codex, GLM, etc.) cannot use Anthropic's native WebSearch. CCS now provisions a first-class local `ccs-websearch` MCP tool, disables native `WebSearch` on third-party launches, and routes search through real local providers instead of surfacing a denied native-tool call.
 
 ### How It Works
 
 | Profile Type | WebSearch Method |
 |--------------|------------------|
 | Claude (native) | Anthropic WebSearch API |
-| Third-party profiles | Local Search Backend Chain |
+| Third-party profiles | CCS local MCP search tool |
 
 ### Local Search Backend Chain
 
-CCS intercepts WebSearch requests and routes them through deterministic search providers:
+For third-party profiles, Claude uses the managed `ccs-websearch` MCP tool. CCS then routes that request through deterministic search providers in this order:
 
 | Priority | Provider | Setup | Notes |
 |----------|----------|-------|-------|
@@ -673,6 +673,7 @@ websearch:
 
 > [!TIP]
 > **DuckDuckGo** still works out of the box. Add **Exa**, **Tavily**, or **Brave Search** if you want API-backed results, then keep Gemini/OpenCode/Grok only if you explicitly want legacy fallback behavior.
+> CCS manages the user-scope MCP entry in `~/.claude.json` and syncs it into isolated account configs when needed.
 
 See [docs/websearch.md](./docs/websearch.md) for detailed configuration and troubleshooting.
 

@@ -1,6 +1,6 @@
 # WebSearch Configuration Guide
 
-Last Updated: 2026-03-27
+Last Updated: 2026-03-30
 
 CCS provides automatic web search for third-party profiles that cannot access Anthropic's native WebSearch API.
 
@@ -12,7 +12,7 @@ Native Claude subscription accounts still use Anthropic's server-side WebSearch 
 
 ### Third-Party Profiles
 
-Third-party profiles cannot execute Anthropic's server-side WebSearch because the tool never reaches their backend. CCS now solves that by intercepting WebSearch and running real local search providers directly.
+Third-party profiles cannot execute Anthropic's server-side WebSearch because the tool never reaches their backend. CCS now solves that by provisioning a first-class local MCP tool, suppressing native `WebSearch` for those launches, and running real local search providers directly.
 
 ## Architecture
 
@@ -20,30 +20,37 @@ Third-party profiles cannot execute Anthropic's server-side WebSearch because th
 ┌──────────────────────────────────────────────────────────────┐
 │                   Claude Code CLI                           │
 │                                                              │
-│  WebSearch Tool Request                                      │
+│  Search Request                                              │
 │       │                                                      │
 │       ├── Native Claude Account? → Anthropic WebSearch API  │
 │       │                                                      │
-│       └── Third-party Profile? → PreToolUse Hook            │
+│       └── Third-party Profile? → native WebSearch disabled  │
 │                                   │                          │
-│                                   ├── 1. Exa Search API      │
-│                                   ├── 2. Tavily Search API   │
-│                                   ├── 3. Brave Search API    │
-│                                   ├── 4. DuckDuckGo HTML     │
-│                                   └── 5. Legacy CLI fallback │
-│                                      (Gemini/OpenCode/Grok)  │
+│                                   └── CCS MCP tool           │
+│                                       ccs-websearch.search   │
+│                                              │               │
+│                                              ├── 1. Exa      │
+│                                              ├── 2. Tavily   │
+│                                              ├── 3. Brave    │
+│                                              ├── 4. DuckDuckGo│
+│                                              └── 5. Legacy CLI│
+│                                                 fallback      │
+│                                                 (Gemini/      │
+│                                                  OpenCode/    │
+│                                                  Grok)        │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ## Why This Changed
 
-The previous design asked another model CLI to perform web search and summarize the answer. That was brittle:
+The previous design asked another model CLI to perform web search and summarize the answer. A later compatibility path also depended on a denied native-tool hook. Both were brittle:
 
 - CLI syntax changed upstream
 - auth state varied per tool
 - prompt/tool behavior drifted across releases
+- hook-shaped denial output produced awkward host UX
 
-The new flow matches the `goclaw` model more closely: web search is treated as a first-class deterministic capability, not an LLM-to-LLM workaround.
+The new flow matches the `goclaw` model more closely: web search is treated as a first-class deterministic capability, not an LLM-to-LLM workaround or a denied native tool call.
 
 ## Providers
 
@@ -109,8 +116,14 @@ websearch:
 | `TAVILY_API_KEY` | Enables Tavily when `providers.tavily.enabled: true` |
 | `BRAVE_API_KEY` | Enables Brave Search when `providers.brave.enabled: true` |
 | `GROK_API_KEY` | Required only for legacy Grok CLI fallback |
-| `CCS_WEBSEARCH_SKIP` | Skip hook entirely |
-| `CCS_DEBUG` | Verbose hook logging |
+| `CCS_WEBSEARCH_SKIP` | Disable the CCS local WebSearch runtime for the current process |
+| `CCS_DEBUG` | Verbose WebSearch runtime logging |
+
+## Managed Runtime Files
+
+- `~/.claude.json` → CCS manages `mcpServers.ccs-websearch`
+- `~/.ccs/mcp/ccs-websearch-server.cjs` → local MCP server binary
+- `~/.ccs/hooks/websearch-transformer.cjs` → shared provider runtime plus legacy compatibility fallback
 
 ## Troubleshooting
 
@@ -140,7 +153,7 @@ Those providers remain supported, but they are no longer the primary path. Enabl
 1. Check `websearch.enabled: true`
 2. Keep DuckDuckGo enabled unless you have a strong reason to disable it
 3. If using Exa, Tavily, or Brave, verify the matching API key
-4. Run with `CCS_DEBUG=1` for hook logs
+4. Run with `CCS_DEBUG=1` for runtime logs
 
 ## Security Considerations
 

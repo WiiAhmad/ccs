@@ -10,7 +10,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import SharedManager from './shared-manager';
 import ProfileContextSyncLock from './profile-context-sync-lock';
-import { AccountContextPolicy, DEFAULT_ACCOUNT_CONTEXT_MODE } from '../auth/account-context';
+import { DEFAULT_ACCOUNT_CONTEXT_MODE } from '../auth/account-context';
+import type { AccountContextPolicy } from '../auth/account-context';
 import { getCcsDir, getCcsHome } from '../utils/config-manager';
 
 /** Options for instance creation */

@@ -1,7 +1,7 @@
 /**
  * Cursor CLI Command
  *
- * Handles `ccs cursor <subcommand>` commands.
+ * Handles `ccs cursor [subcommand]` commands.
  */
 
 import {
@@ -34,6 +34,12 @@ export const CURSOR_SUBCOMMANDS = [
   '-h',
 ] as const;
 
+export function isCursorSubcommandToken(token?: string): boolean {
+  return (
+    Boolean(token) && CURSOR_SUBCOMMANDS.includes(token as (typeof CURSOR_SUBCOMMANDS)[number])
+  );
+}
+
 /**
  * Handle cursor subcommand.
  */
@@ -56,6 +62,7 @@ export async function handleCursorCommand(args: string[]): Promise<number> {
     case 'disable':
       return handleDisable();
     case undefined:
+      return handleHelp();
     case 'help':
     case '--help':
     case '-h':

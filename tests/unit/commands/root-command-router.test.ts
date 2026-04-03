@@ -27,7 +27,7 @@ beforeEach(() => {
     },
   }));
 
-  mock.module('../../../src/commands/api-command', () => ({
+  mock.module('../../../src/commands/api-command/index', () => ({
     handleApiCommand: async (args: string[]) => {
       calls.push(`api:${args.join(' ')}`);
     },
@@ -41,6 +41,12 @@ beforeEach(() => {
 
   mock.module('../../../src/commands/tokens-command', () => ({
     handleTokensCommand: async () => 37,
+  }));
+
+  mock.module('../../../src/commands/completion-backend', () => ({
+    handleCompletionCommand: async (args: string[]) => {
+      calls.push(`complete:${args.join(' ')}`);
+    },
   }));
 });
 
@@ -119,5 +125,13 @@ describe('root-command-router', () => {
     const tryHandleRootCommand = await loadTryHandleRootCommand();
 
     await expect(tryHandleRootCommand(['tokens', 'list'])).rejects.toThrow('process.exit(37)');
+  });
+
+  it('routes hidden completion queries through the completion backend', async () => {
+    const tryHandleRootCommand = await loadTryHandleRootCommand();
+
+    await expect(tryHandleRootCommand(['__complete', '--shell', 'bash', '--current', 'do'])).resolves.toBe(true);
+
+    expect(calls).toEqual(['complete:--shell bash --current do']);
   });
 });

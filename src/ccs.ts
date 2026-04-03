@@ -318,10 +318,11 @@ async function main(): Promise<void> {
   registerTarget(new CodexAdapter());
 
   const args = process.argv.slice(2);
+  const isCompletionCommand = args[0] === '__complete';
 
   // Initialize UI colors early to ensure consistent colored output
   // Must happen before any status messages (ok, info, fail, etc.)
-  if (process.stdout.isTTY && !process.env['CI']) {
+  if (!isCompletionCommand && process.stdout.isTTY && !process.env['CI']) {
     const { initUI } = await import('./utils/ui');
     await initUI();
   }
@@ -361,7 +362,7 @@ async function main(): Promise<void> {
 
     // Security warning: cloud sync paths expose OAuth tokens
     const cloudService = detectCloudSyncPath(configDirValue);
-    if (cloudService) {
+    if (!isCompletionCommand && cloudService) {
       console.error(warn(`CCS directory is under ${cloudService}.`));
       console.error('    OAuth tokens in cliproxy/auth/ will be synced to cloud.');
       console.error('    Consider: CCS_DIR=/path/outside/cloud ccs ...');
@@ -372,7 +373,7 @@ async function main(): Promise<void> {
   } else if (process.env.CCS_DIR) {
     // Also warn for CCS_DIR env var pointing to cloud sync
     const cloudService = detectCloudSyncPath(process.env.CCS_DIR);
-    if (cloudService) {
+    if (!isCompletionCommand && cloudService) {
       console.error(warn(`CCS directory is under ${cloudService}.`));
       console.error('    OAuth tokens in cliproxy/auth/ will be synced to cloud.');
       console.error('    Consider: CCS_DIR=/path/outside/cloud ccs ...');
@@ -380,11 +381,16 @@ async function main(): Promise<void> {
   } else if (process.env.CCS_HOME) {
     // Also warn for CCS_HOME env var pointing to cloud sync
     const cloudService = detectCloudSyncPath(process.env.CCS_HOME);
-    if (cloudService) {
+    if (!isCompletionCommand && cloudService) {
       console.error(warn(`CCS directory is under ${cloudService}.`));
       console.error('    OAuth tokens in cliproxy/auth/ will be synced to cloud.');
       console.error('    Consider: CCS_DIR=/path/outside/cloud ccs ...');
     }
+  }
+
+  if (isCompletionCommand) {
+    await tryHandleRootCommand(args);
+    return;
   }
 
   if (shouldPassthroughNativeCodexFlagCommand(args)) {

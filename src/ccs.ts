@@ -64,6 +64,7 @@ import { tryHandleRootCommand } from './commands/root-command-router';
 // Import extracted utility functions
 import { execClaude } from './utils/shell-executor';
 import { isDeprecatedGlmtProfileName, normalizeDeprecatedGlmtEnv } from './utils/glmt-deprecation';
+import { maybeWarnAboutResumeLaneMismatch } from './auth/resume-lane-warning';
 
 // Import target adapter system
 import {
@@ -1269,6 +1270,7 @@ async function main(): Promise<void> {
         CCS_WEBSEARCH_SKIP: '1',
         CCS_IMAGE_ANALYSIS_SKIP: '1',
       };
+      await maybeWarnAboutResumeLaneMismatch(profileInfo.name, instancePath, remainingArgs);
       const launchArgs = resolveNativeClaudeLaunchArgs(remainingArgs, 'account', instancePath);
       execClaude(claudeCli, launchArgs, envVars);
     } else {

@@ -15,7 +15,9 @@ function suggestionValues(
   current = '',
   shell: 'bash' | 'fish' | 'powershell' | 'zsh' = 'bash'
 ): string[] {
-  return getCompletionSuggestions({ tokensBeforeCurrent, current, shell }).map((entry) => entry.value);
+  return getCompletionSuggestions({ tokensBeforeCurrent, current, shell }).map(
+    (entry) => entry.value
+  );
 }
 
 beforeEach(() => {
@@ -100,11 +102,20 @@ describe('completion backend', () => {
 
   test('suggests lifecycle subcommands for api', () => {
     const values = suggestionValues(['api']);
-    expect(values).toEqual(expect.arrayContaining(['create', 'discover', 'copy', 'export', 'import', 'remove']));
+    expect(values).toEqual(
+      expect.arrayContaining(['create', 'discover', 'copy', 'export', 'import', 'remove'])
+    );
   });
 
   test('suggests account profiles for auth show', () => {
     const values = suggestionValues(['auth', 'show']);
+    expect(values).toContain('work');
+    expect(values).toContain('--json');
+  });
+
+  test('suggests default lane and account profiles for auth backup', () => {
+    const values = suggestionValues(['auth', 'backup']);
+    expect(values).toContain('default');
     expect(values).toContain('work');
     expect(values).toContain('--json');
   });
@@ -116,7 +127,9 @@ describe('completion backend', () => {
 
   test('suggests env format values after the format flag', () => {
     const values = suggestionValues(['env', '--format']);
-    expect(values).toEqual(expect.arrayContaining(['openai', 'anthropic', 'raw', 'claude-extension']));
+    expect(values).toEqual(
+      expect.arrayContaining(['openai', 'anthropic', 'raw', 'claude-extension'])
+    );
   });
 
   test('includes live doctor and cliproxy flags from the shared catalog', () => {

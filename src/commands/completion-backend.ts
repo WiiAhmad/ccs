@@ -94,6 +94,8 @@ function getSuggestionsForCommand(tokensBeforeCurrent: string[]): CompletionSugg
       return completeSubcommands(ROOT_HELP_TOPICS.map((topic) => topic.name));
     case 'auth':
       if (!subcommand) return completeSubcommands(AUTH_SUBCOMMANDS);
+      if (subcommand === 'backup')
+        return completeSubcommands(['default', ...getProfileNames('accounts')], ['--json']);
       if (subcommand === 'show')
         return completeSubcommands(getProfileNames('accounts'), ['--json']);
       if (subcommand === 'remove')

@@ -733,6 +733,14 @@ export interface Account {
   displayName?: string;
 }
 
+export interface PlainCcsLane {
+  kind: 'native' | 'account-default' | 'account-inherited' | 'profile-default' | 'ambient';
+  label: string;
+  account_name?: string | null;
+  profile_name?: string | null;
+  project_count: number;
+}
+
 export interface UpdateAccountContext {
   context_mode: 'isolated' | 'shared';
   context_group?: string;
@@ -1120,7 +1128,10 @@ export const api = {
     },
   },
   accounts: {
-    list: () => request<{ accounts: Account[]; default: string | null }>('/accounts'),
+    list: () =>
+      request<{ accounts: Account[]; default: string | null; plain_ccs_lane?: PlainCcsLane }>(
+        '/accounts'
+      ),
     setDefault: (name: string) =>
       request('/accounts/default', {
         method: 'POST',

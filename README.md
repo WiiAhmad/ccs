@@ -522,6 +522,29 @@ accounts:
 
 Shared context with `standard` depth links project workspace data. `deeper` depth links additional continuity artifacts. Credentials remain isolated per account.
 
+Resume is lane-scoped:
+
+- plain `ccs -r` resumes the lane that plain `ccs` currently uses
+- `ccs <account> -r` resumes that account's lane only
+- those lanes can differ, even when an account is `shared + deeper`
+
+If you do most of your work with plain `ccs` and want future resumes to line up with an auth account:
+
+```bash
+ccs auth default work
+```
+
+If you need to protect local continuity files before changing account sync settings:
+
+```bash
+ccs auth backup work
+ccs auth backup default
+```
+
+- `ccs auth backup work` backs up the local continuity lane for that auth account
+- `ccs auth backup default` backs up the lane plain `ccs` would use right now
+- this backs up local continuity artifacts only; Claude-hosted resume behavior still depends on upstream state
+
 #### Cross-Profile Continuity Inheritance (Claude Target)
 
 You can map non-account profiles (API, CLIProxy, Copilot, or `default`) to reuse continuity artifacts from an account profile:
@@ -532,6 +555,7 @@ continuity:
     glm: pro
     gemini: pro
     copilot: pro
+    default: pro
 ```
 
 With this config, `ccs glm`, `ccs gemini`, and `ccs copilot` run with `pro`'s `CLAUDE_CONFIG_DIR` continuity context while keeping each profile's own provider credentials/settings.

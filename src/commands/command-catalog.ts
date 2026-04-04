@@ -215,6 +215,7 @@ export const ROOT_COMMAND_FLAGS = [
 ] as const;
 export const AUTH_SUBCOMMANDS = [
   'create',
+  'backup',
   'list',
   'show',
   'remove',

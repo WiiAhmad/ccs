@@ -463,6 +463,14 @@ class ProfileDetector {
   }
 
   /**
+   * Public wrapper for diagnostics and tooling that need to inspect how
+   * plain `ccs` resolves without duplicating the default-profile logic.
+   */
+  resolveDefaultProfileResult(): ProfileDetectionResult {
+    return this.resolveDefaultProfile();
+  }
+
+  /**
    * List available profiles (for error messages)
    */
   private listAvailableProfiles(): string {

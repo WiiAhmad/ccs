@@ -21,6 +21,8 @@ interface HistorySyncLearningMapProps {
   sharedStandardCount: number;
   deeperSharedCount: number;
   sharedGroups: string[];
+  sharedPeerGroups: string[];
+  deeperReadyGroups: string[];
   legacyTargetCount: number;
   cliproxyCount: number;
 }
@@ -74,12 +76,20 @@ export function HistorySyncLearningMap({
   sharedStandardCount,
   deeperSharedCount,
   sharedGroups,
+  sharedPeerGroups,
+  deeperReadyGroups,
   legacyTargetCount,
   cliproxyCount,
 }: HistorySyncLearningMapProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const groupsToShow = sharedGroups.length > 0 ? sharedGroups : ['default'];
+  const highlightGroup = deeperReadyGroups[0] || sharedPeerGroups[0] || groupsToShow[0];
+  const hasMixedState =
+    deeperReadyGroups.length > 0 &&
+    (isolatedCount > 0 ||
+      sharedStandardCount > 0 ||
+      sharedPeerGroups.length > deeperReadyGroups.length);
 
   return (
     <Card className="border-dashed">
@@ -127,6 +137,16 @@ export function HistorySyncLearningMap({
             icon={Waves}
             tone="deeper"
           />
+        </div>
+
+        <div className="rounded-md border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+          {sharedPeerGroups.length === 0
+            ? t('historySyncLearningMap.sameGroupRule')
+            : deeperReadyGroups.length === 0
+              ? t('historySyncLearningMap.deeperRecommendation', { group: highlightGroup })
+              : hasMixedState
+                ? t('historySyncLearningMap.partialGroup', { group: highlightGroup })
+                : t('historySyncLearningMap.readyGroup', { group: highlightGroup })}
         </div>
 
         <Collapsible open={open} onOpenChange={setOpen}>

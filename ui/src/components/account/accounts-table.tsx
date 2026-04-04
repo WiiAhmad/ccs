@@ -33,23 +33,24 @@ import {
   useResetDefaultAccount,
   useUpdateAccountContext,
 } from '@/hooks/use-accounts';
-import type { Account } from '@/lib/api-client';
+import type { AuthAccountRow, SharedGroupSummary } from '@/lib/account-continuity';
 
 interface AccountsTableProps {
-  data: Account[];
+  data: AuthAccountRow[];
   defaultAccount: string | null;
+  groupSummaries: SharedGroupSummary[];
 }
 
-export function AccountsTable({ data, defaultAccount }: AccountsTableProps) {
+export function AccountsTable({ data, defaultAccount, groupSummaries }: AccountsTableProps) {
   const { t } = useTranslation();
   const setDefaultMutation = useSetDefaultAccount();
   const deleteMutation = useDeleteAccount();
   const resetDefaultMutation = useResetDefaultAccount();
   const updateContextMutation = useUpdateAccountContext();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [contextTarget, setContextTarget] = useState<Account | null>(null);
+  const [contextTarget, setContextTarget] = useState<AuthAccountRow | null>(null);
 
-  const columns: ColumnDef<Account>[] = [
+  const columns: ColumnDef<AuthAccountRow>[] = [
     {
       accessorKey: 'name',
       header: t('accountsTable.name'),
@@ -104,38 +105,43 @@ export function AccountsTable({ data, defaultAccount }: AccountsTableProps) {
         const mode = row.original.context_mode || 'isolated';
         if (mode === 'shared') {
           const group = row.original.context_group || 'default';
-          if (row.original.continuity_mode === 'deeper') {
-            return (
-              <span className="text-muted-foreground">
-                {t('accountsTable.sharedGroupDeeper', { group })}
-              </span>
-            );
-          }
-
-          if (row.original.continuity_inferred) {
-            return (
-              <span className="text-amber-700 dark:text-amber-400">
-                {t('accountsTable.sharedGroupLegacy', { group })}
-              </span>
-            );
-          }
-
+          const mainLabel =
+            row.original.continuity_mode === 'deeper'
+              ? t('accountsTable.sharedGroupDeeper', { group })
+              : row.original.continuity_inferred
+                ? t('accountsTable.sharedGroupLegacy', { group })
+                : t('accountsTable.sharedGroupStandard', { group });
+          const peerLabel =
+            row.original.sameGroupPeerCount > 0
+              ? t('accountsTable.sameGroupPeerCount', { count: row.original.sameGroupPeerCount })
+              : t('accountsTable.noSameGroupPeer');
           return (
-            <span className="text-muted-foreground">
-              {t('accountsTable.sharedGroupStandard', { group })}
-            </span>
+            <div className="space-y-0.5">
+              <p className="text-sm text-muted-foreground">{mainLabel}</p>
+              <p className="text-xs text-muted-foreground/80">{peerLabel}</p>
+            </div>
           );
         }
 
         if (row.original.context_inferred) {
           return (
-            <span className="text-amber-700 dark:text-amber-400">
-              {t('accountsTable.isolatedLegacy')}
-            </span>
+            <div className="space-y-0.5">
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                {t('accountsTable.isolatedLegacy')}
+              </p>
+              <p className="text-xs text-amber-700/80 dark:text-amber-400/80">
+                {t('accountsTable.legacyReview')}
+              </p>
+            </div>
           );
         }
 
-        return <span className="text-muted-foreground">{t('accountsTable.isolated')}</span>;
+        return (
+          <div className="space-y-0.5">
+            <p className="text-sm text-muted-foreground">{t('accountsTable.isolated')}</p>
+            <p className="text-xs text-muted-foreground/80">{t('accountsTable.noHandoff')}</p>
+          </div>
+        );
       },
     },
     {
@@ -299,7 +305,11 @@ export function AccountsTable({ data, defaultAccount }: AccountsTableProps) {
       </div>
 
       {contextTarget && (
-        <EditAccountContextDialog account={contextTarget} onClose={() => setContextTarget(null)} />
+        <EditAccountContextDialog
+          account={contextTarget}
+          groupSummaries={groupSummaries}
+          onClose={() => setContextTarget(null)}
+        />
       )}
 
       {/* Delete confirmation dialog */}

@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
-import type { Account } from '@/lib/api-client';
+import type { AuthAccountRow, SharedGroupSummary } from '@/lib/account-continuity';
 import { useUpdateAccountContext } from '@/hooks/use-accounts';
 
 type ContextMode = 'isolated' | 'shared';
@@ -28,11 +28,16 @@ const MAX_CONTEXT_GROUP_LENGTH = 64;
 const CONTEXT_GROUP_PATTERN = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
 
 interface EditAccountContextDialogProps {
-  account: Account;
+  account: AuthAccountRow;
+  groupSummaries: SharedGroupSummary[];
   onClose: () => void;
 }
 
-export function EditAccountContextDialog({ account, onClose }: EditAccountContextDialogProps) {
+export function EditAccountContextDialog({
+  account,
+  groupSummaries,
+  onClose,
+}: EditAccountContextDialogProps) {
   const { t } = useTranslation();
   const updateContextMutation = useUpdateAccountContext();
   const [mode, setMode] = useState<ContextMode>(
@@ -44,11 +49,35 @@ export function EditAccountContextDialog({ account, onClose }: EditAccountContex
   );
 
   const normalizedGroup = useMemo(() => group.trim().toLowerCase().replace(/\s+/g, '-'), [group]);
+  const matchingGroup = useMemo(
+    () => groupSummaries.find((summary) => summary.group === normalizedGroup),
+    [groupSummaries, normalizedGroup]
+  );
   const isSharedGroupValid =
     normalizedGroup.length > 0 &&
     normalizedGroup.length <= MAX_CONTEXT_GROUP_LENGTH &&
     CONTEXT_GROUP_PATTERN.test(normalizedGroup);
   const canSubmit = mode === 'isolated' || isSharedGroupValid;
+  const sameGroupPeerCount =
+    mode === 'shared'
+      ? Math.max(
+          (matchingGroup?.sharedCount ?? 0) -
+            (account.context_mode === 'shared' && account.context_group === normalizedGroup
+              ? 1
+              : 0),
+          0
+        )
+      : 0;
+  const sameGroupDeeperPeerCount =
+    mode === 'shared'
+      ? Math.max(
+          (matchingGroup?.deeperCount ?? 0) -
+            (account.continuity_mode === 'deeper' && account.context_group === normalizedGroup
+              ? 1
+              : 0),
+          0
+        )
+      : 0;
 
   const handleSave = () => {
     if (!canSubmit) {
@@ -150,6 +179,36 @@ export function EditAccountContextDialog({ account, onClose }: EditAccountContex
           <p className="text-xs text-muted-foreground">
             {t('editAccountContext.credentialsIsolated')}
           </p>
+
+          <div className="rounded-md border bg-muted/20 p-3 text-xs">
+            <p className="font-medium text-foreground">
+              {t('editAccountContext.implicationTitle')}
+            </p>
+            <div className="mt-2 space-y-1.5 text-muted-foreground">
+              {mode === 'isolated' ? (
+                <p>{t('editAccountContext.isolatedImplication')}</p>
+              ) : (
+                <>
+                  <p>{t('editAccountContext.sameGroupRule', { group: normalizedGroup })}</p>
+                  <p>
+                    {sameGroupPeerCount > 0
+                      ? t('editAccountContext.sameGroupPeerCount', { count: sameGroupPeerCount })
+                      : t('editAccountContext.noSameGroupPeer')}
+                  </p>
+                  <p>
+                    {continuityMode === 'deeper'
+                      ? sameGroupDeeperPeerCount > 0
+                        ? t('editAccountContext.deeperReady', {
+                            count: sameGroupDeeperPeerCount,
+                          })
+                        : t('editAccountContext.deeperNeedsPeers')
+                      : t('editAccountContext.standardWarning')}
+                  </p>
+                </>
+              )}
+              <p>{t('editAccountContext.resumeOriginalWarning')}</p>
+            </div>
+          </div>
         </div>
 
         <DialogFooter>

@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, ChevronDown, Plus, Users, Zap } from 'lucide-react';
 import { AccountsTable } from '@/components/account/accounts-table';
+import { ContinuityReadinessCard } from '@/components/account/continuity-readiness-card';
 import { CreateAuthProfileDialog } from '@/components/account/create-auth-profile-dialog';
 import { HistorySyncLearningMap } from '@/components/account/history-sync-learning-map';
 import { CopyButton } from '@/components/ui/copy-button';
@@ -35,13 +36,13 @@ export function AccountsPage() {
   const sharedStandardCount = data?.sharedStandardCount || 0;
   const deeperSharedCount = data?.deeperSharedCount || 0;
   const isolatedCount = data?.isolatedCount || 0;
-  const sharedGroups = Array.from(
-    new Set(
-      authAccounts
-        .filter((account) => account.context_mode === 'shared')
-        .map((account) => account.context_group || 'default')
-    )
-  ).sort((a, b) => a.localeCompare(b));
+  const sharedAloneCount = data?.sharedAloneCount || 0;
+  const sharedPeerAccountCount = data?.sharedPeerAccountCount || 0;
+  const deeperReadyAccountCount = data?.deeperReadyAccountCount || 0;
+  const sharedPeerGroups = data?.sharedPeerGroups || [];
+  const deeperReadyGroups = data?.deeperReadyGroups || [];
+  const sharedGroups = data?.sharedGroups || [];
+  const groupSummaries = data?.groupSummaries || [];
 
   const legacyTargets = authAccounts.filter(
     (account) => account.context_inferred || account.continuity_inferred
@@ -176,11 +177,7 @@ export function AccountsPage() {
                         <p className="font-semibold text-foreground">
                           {t('accountsPage.sharedDeeper')}
                         </p>
-                        <p className="mt-1">
-                          {t('accountsPage.sharedDeeperPrefix')} <code>session-env</code>,{' '}
-                          <code>file-history</code>, <code>shell-snapshots</code>,{' '}
-                          <code>todos</code>.
-                        </p>
+                        <p className="mt-1">{t('accountsPage.sharedDeeperDesc')}</p>
                       </div>
                       <div className="rounded-md border p-2.5">
                         <p className="font-semibold text-foreground">
@@ -238,11 +235,23 @@ export function AccountsPage() {
           </div>
 
           <div className="flex-1 min-h-0 p-5 space-y-4 overflow-y-auto">
+            <ContinuityReadinessCard
+              totalAccounts={authAccounts.length}
+              isolatedCount={isolatedCount}
+              sharedAloneCount={sharedAloneCount}
+              sharedPeerAccountCount={sharedPeerAccountCount}
+              deeperReadyAccountCount={deeperReadyAccountCount}
+              sharedPeerGroups={sharedPeerGroups}
+              deeperReadyGroups={deeperReadyGroups}
+            />
+
             <HistorySyncLearningMap
               isolatedCount={isolatedCount}
               sharedStandardCount={sharedStandardCount}
               deeperSharedCount={deeperSharedCount}
               sharedGroups={sharedGroups}
+              sharedPeerGroups={sharedPeerGroups}
+              deeperReadyGroups={deeperReadyGroups}
               legacyTargetCount={legacyTargetCount}
               cliproxyCount={cliproxyCount}
             />
@@ -258,7 +267,11 @@ export function AccountsPage() {
                 {isLoading ? (
                   <div className="text-muted-foreground">{t('accountsPage.loadingAccounts')}</div>
                 ) : (
-                  <AccountsTable data={authAccounts} defaultAccount={data?.default ?? null} />
+                  <AccountsTable
+                    data={authAccounts}
+                    defaultAccount={data?.default ?? null}
+                    groupSummaries={groupSummaries}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -308,8 +321,20 @@ export function AccountsPage() {
           sharedStandardCount={sharedStandardCount}
           deeperSharedCount={deeperSharedCount}
           sharedGroups={sharedGroups}
+          sharedPeerGroups={sharedPeerGroups}
+          deeperReadyGroups={deeperReadyGroups}
           legacyTargetCount={legacyTargetCount}
           cliproxyCount={cliproxyCount}
+        />
+
+        <ContinuityReadinessCard
+          totalAccounts={authAccounts.length}
+          isolatedCount={isolatedCount}
+          sharedAloneCount={sharedAloneCount}
+          sharedPeerAccountCount={sharedPeerAccountCount}
+          deeperReadyAccountCount={deeperReadyAccountCount}
+          sharedPeerGroups={sharedPeerGroups}
+          deeperReadyGroups={deeperReadyGroups}
         />
 
         <Card>
@@ -320,7 +345,11 @@ export function AccountsPage() {
             {isLoading ? (
               <div className="text-muted-foreground">{t('accountsPage.loadingAccounts')}</div>
             ) : (
-              <AccountsTable data={authAccounts} defaultAccount={data?.default ?? null} />
+              <AccountsTable
+                data={authAccounts}
+                defaultAccount={data?.default ?? null}
+                groupSummaries={groupSummaries}
+              />
             )}
           </CardContent>
         </Card>

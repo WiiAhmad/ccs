@@ -11,7 +11,6 @@
  */
 
 import * as fs from 'fs';
-import * as path from 'path';
 import { fail, info, warn, color, ok } from '../../utils/ui';
 import { ensureCLIProxyBinary } from '../binary-manager';
 import { generateConfig } from '../config-generator';
@@ -48,9 +47,11 @@ import {
 } from './auth-types';
 import { isHeadlessEnvironment, killProcessOnPort, showStep } from './environment-detector';
 import {
+  ProviderTokenSnapshot,
+  findNewTokenSnapshotForAuthAttempt,
   getProviderTokenDir,
   isAuthenticated,
-  isTokenFileForProvider,
+  listProviderTokenSnapshots,
   registerAccountFromToken,
 } from './token-manager';
 import { executeOAuthProcess } from './oauth-process';
@@ -78,11 +79,6 @@ interface PasteCallbackStartData {
 
 const PASTE_CALLBACK_AUTH_URL_POLL_INTERVAL_MS = 3000;
 const POLLED_AUTH_LOCAL_TOKEN_GRACE_MS = 15 * 1000;
-
-type ProviderTokenSnapshot = {
-  file: string;
-  mtimeMs: number;
-};
 
 export async function requestPasteCallbackStart(
   provider: CLIProxyProvider,
@@ -146,56 +142,13 @@ function parseAuthUrlState(url: string | null | undefined): string | null {
   }
 }
 
-function listProviderTokenSnapshots(
-  provider: CLIProxyProvider,
-  tokenDir: string
-): ProviderTokenSnapshot[] {
-  if (!fs.existsSync(tokenDir)) {
-    return [];
-  }
-
-  return fs
-    .readdirSync(tokenDir)
-    .filter((file) => file.endsWith('.json'))
-    .map((file): ProviderTokenSnapshot | null => {
-      const filePath = path.join(tokenDir, file);
-      if (!isTokenFileForProvider(filePath, provider)) {
-        return null;
-      }
-
-      return {
-        file,
-        mtimeMs: fs.statSync(filePath).mtimeMs,
-      };
-    })
-    .filter((snapshot): snapshot is ProviderTokenSnapshot => snapshot !== null)
-    .sort((left, right) => right.mtimeMs - left.mtimeMs);
-}
-
 export function findNewTokenSnapshotForManualAuth(
   provider: CLIProxyProvider,
   tokenDir: string,
   knownTokenFiles: ProviderTokenSnapshot[],
   expectedAccountId?: string
 ): ProviderTokenSnapshot | null {
-  const knownTokenMtimes = new Map(
-    knownTokenFiles.map((snapshot) => [snapshot.file, snapshot.mtimeMs])
-  );
-
-  return (
-    listProviderTokenSnapshots(provider, tokenDir).find((snapshot) => {
-      const knownMtime = knownTokenMtimes.get(snapshot.file);
-      if (knownMtime === undefined) {
-        return true;
-      }
-
-      if (!expectedAccountId) {
-        return false;
-      }
-
-      return snapshot.mtimeMs > knownMtime + 1;
-    }) || null
-  );
+  return findNewTokenSnapshotForAuthAttempt(provider, tokenDir, knownTokenFiles, expectedAccountId);
 }
 
 async function waitForManualCallbackToken(

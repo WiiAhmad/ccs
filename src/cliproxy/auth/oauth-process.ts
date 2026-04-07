@@ -24,7 +24,12 @@ import {
 } from '../project-selection-handler';
 import { KiroAuthMethod, ProviderOAuthConfig } from './auth-types';
 import { getTimeoutTroubleshooting, showStep } from './environment-detector';
-import { isAuthenticated, registerAccountFromToken } from './token-manager';
+import {
+  type ProviderTokenSnapshot,
+  findNewTokenSnapshot,
+  listProviderTokenSnapshots,
+  registerAccountFromToken,
+} from './token-manager';
 import {
   deviceCodeEvents,
   DEVICE_CODE_TIMEOUT_MS,
@@ -476,20 +481,15 @@ function displayUrlFromStderr(
 
 const ANSI_ESCAPE_REGEX = /\x1b\[[0-9;]*m/g;
 
-export function extractLikelyAuthFailureFromStderr(
+export function extractLikelyAuthFailureFromLogs(
   provider: CLIProxyProvider,
-  stderrData: string
+  logData: string
 ): string | null {
-  // Keep this scoped to ghcp to avoid over-classifying other providers.
-  if (provider !== 'ghcp') {
+  if (!logData.trim()) {
     return null;
   }
 
-  if (!stderrData.trim()) {
-    return null;
-  }
-
-  const normalizedLines = stderrData
+  const normalizedLines = logData
     .split('\n')
     .map((line) => line.replace(ANSI_ESCAPE_REGEX, '').trim())
     .filter(Boolean)
@@ -507,11 +507,23 @@ export function extractLikelyAuthFailureFromStderr(
       return line;
     });
 
+  const providerPatterns: Partial<Record<CLIProxyProvider, RegExp[]>> = {
+    ghcp: [
+      /github copilot authentication failed:\s*(.+)/i,
+      /failed to verify copilot access[^:]*:\s*(.+)/i,
+    ],
+    kiro: [
+      /kiro idc authentication failed:\s*(.+)/i,
+      /kiro authentication failed:\s*(.+)/i,
+      /login failed:\s*(.+)/i,
+      /failed to register client:\s*(.+)/i,
+    ],
+  };
+
   const prioritizedPatterns = [
-    /github copilot authentication failed:\s*(.+)/i,
-    /authentication failed:\s*(.+)/i,
-    /failed to verify copilot access[^:]*:\s*(.+)/i,
-    /failed to save auth:\s*(.+)/i,
+    ...(providerPatterns[provider] || []),
+    /^authentication failed:\s*(.+)/i,
+    /^failed to save auth:\s*(.+)/i,
   ];
 
   for (let i = normalizedLines.length - 1; i >= 0; i--) {
@@ -527,6 +539,34 @@ export function extractLikelyAuthFailureFromStderr(
   return null;
 }
 
+export function extractLikelyAuthFailureFromStderr(
+  provider: CLIProxyProvider,
+  stderrData: string
+): string | null {
+  return extractLikelyAuthFailureFromLogs(provider, stderrData);
+}
+
+export function analyzeSuccessfulAuthExit(options: {
+  provider: CLIProxyProvider;
+  knownTokenFiles: ProviderTokenSnapshot[];
+  currentTokenFiles: ProviderTokenSnapshot[];
+  expectedAccountId?: string;
+  stdoutData: string;
+  stderrData: string;
+}): { tokenSnapshot: ProviderTokenSnapshot | null; failureReason: string | null } {
+  const tokenSnapshot = findNewTokenSnapshot(
+    options.currentTokenFiles,
+    options.knownTokenFiles,
+    options.expectedAccountId
+  );
+  const failureReason = extractLikelyAuthFailureFromLogs(
+    options.provider,
+    [options.stdoutData, options.stderrData].filter(Boolean).join('\n')
+  );
+
+  return { tokenSnapshot, failureReason };
+}
+
 /** Handle token not found after successful process exit */
 async function handleTokenNotFound(
   provider: CLIProxyProvider,
@@ -537,9 +577,22 @@ async function handleTokenNotFound(
   verbose: boolean,
   failureReason?: string
 ): Promise<AccountInfo | null> {
+  console.log('');
+
+  if (failureReason) {
+    // Sanitize internal URLs/paths from failure reason to avoid leaking infrastructure details
+    const sanitizedReason = failureReason
+      .replace(/https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0)[^\s]*/gi, '[internal-url]')
+      .replace(/\/(?:root|home|opt|tmp|var)\/[^\s]*/g, '[path]');
+    console.log(fail('Authentication failed before a usable token was saved'));
+    console.log(`    ${sanitizedReason}`);
+    console.log('');
+    console.log(`Try: ccs ${provider} --auth --verbose`);
+    return null;
+  }
+
   // Kiro-specific: Try auto-import from Kiro IDE
   if (provider === 'kiro') {
-    console.log('');
     console.log(warn('Callback redirected to Kiro IDE. Attempting to import token...'));
 
     const result = await tryKiroImport(tokenDir, verbose);
@@ -555,24 +608,6 @@ async function handleTokenNotFound(
     console.log('To manually import from Kiro IDE:');
     console.log('  1. Ensure you are logged into Kiro IDE');
     console.log('  2. Run: ccs kiro --import');
-    return null;
-  }
-
-  // Default behavior for other providers
-  console.log('');
-
-  if (failureReason) {
-    // Sanitize internal URLs/paths from failure reason to avoid leaking infrastructure details
-    const sanitizedReason = failureReason
-      .replace(/https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0)[^\s]*/gi, '[internal-url]')
-      .replace(/\/(?:root|home|opt|tmp|var)\/[^\s]*/g, '[path]');
-    console.log(fail('Authentication completed but token was not persisted'));
-    console.log(`    ${sanitizedReason}`);
-    console.log('');
-    console.log('This usually means provider-side authorization was accepted,');
-    console.log('but CLIProxy failed a post-auth verification or token save step.');
-    console.log('');
-    console.log(`Try: ccs ${provider} --auth --verbose`);
     return null;
   }
 
@@ -644,6 +679,7 @@ export function executeOAuthProcess(options: OAuthProcessOptions): Promise<Accou
   return new Promise<AccountInfo | null>((resolve) => {
     const flowType = resolveAuthFlowType(options);
     const isDeviceCodeFlow = flowType === 'device_code';
+    const knownTokenFiles = listProviderTokenSnapshots(provider, tokenDir);
 
     // Device-code flows can usually inherit stdin, but Kiro's default AWS flow now
     // prints an intermediate Builder ID vs IDC selector that CCS auto-answers.
@@ -729,13 +765,14 @@ export function executeOAuthProcess(options: OAuthProcessOptions): Promise<Accou
         displayUrlFromStderr(output, state, oauthConfig);
       }
       if (options.manualCallback && !state.manualCallbackPrompted) {
-        const urlMatch = output.match(/https?:\/\/[^\s]+/);
-        if (urlMatch) {
+        const authUrl =
+          extractLikelyOAuthAuthorizationUrl(output) ?? output.match(/https?:\/\/[^\s]+/)?.[0];
+        if (authUrl) {
           state.manualCallbackPrompted = true;
           await replayManualCallback(
             options.oauthConfig,
             authProcess,
-            urlMatch[0],
+            authUrl,
             options.verbose,
             state,
             10 * 60 * 1000
@@ -814,7 +851,16 @@ export function executeOAuthProcess(options: OAuthProcessOptions): Promise<Accou
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
       if (code === 0) {
-        if (isAuthenticated(provider)) {
+        const exitAnalysis = analyzeSuccessfulAuthExit({
+          provider,
+          knownTokenFiles,
+          currentTokenFiles: listProviderTokenSnapshots(provider, tokenDir),
+          expectedAccountId,
+          stdoutData: state.accumulatedOutput,
+          stderrData: state.stderrData,
+        });
+
+        if (exitAnalysis.tokenSnapshot) {
           console.log('');
           console.log(ok(`Authentication successful (${elapsed}s)`));
 
@@ -827,13 +873,11 @@ export function executeOAuthProcess(options: OAuthProcessOptions): Promise<Accou
             registerAccountFromToken(provider, tokenDir, nickname, verbose, expectedAccountId)
           );
         } else {
-          const failureReason = extractLikelyAuthFailureFromStderr(provider, state.stderrData);
-
           // Emit device code failure event for UI
           if (isDeviceCodeFlow && state.deviceCodeDisplayed) {
             deviceCodeEvents.emit('deviceCode:failed', {
               sessionId: state.sessionId,
-              error: failureReason || 'Token not found after authentication',
+              error: exitAnalysis.failureReason || 'Token not found after authentication',
             });
           }
 
@@ -845,7 +889,7 @@ export function executeOAuthProcess(options: OAuthProcessOptions): Promise<Accou
             nickname,
             expectedAccountId,
             verbose,
-            failureReason || undefined
+            exitAnalysis.failureReason || undefined
           );
           resolve(account);
         }

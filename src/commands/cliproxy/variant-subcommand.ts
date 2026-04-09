@@ -45,6 +45,17 @@ interface CliproxyProfileArgs {
   errors: string[];
 }
 
+const variantManagedPrefixProviders = new Set<CLIProxyProvider>();
+
+async function ensureVariantManagedModelPrefixes(provider: CLIProxyProvider): Promise<void> {
+  if (variantManagedPrefixProviders.has(provider)) {
+    return;
+  }
+
+  await ensureManagedModelPrefixes([provider]);
+  variantManagedPrefixProviders.add(provider);
+}
+
 function parseTargetValue(rawValue: string): TargetType | null {
   const normalized = rawValue.trim().toLowerCase();
   if (isPersistedTargetType(normalized)) {
@@ -188,7 +199,7 @@ async function selectTierConfig(
   let model: string | undefined;
   if (supportsModelConfig(provider as CLIProxyProvider)) {
     try {
-      await ensureManagedModelPrefixes([provider as CLIProxyProvider]);
+      await ensureVariantManagedModelPrefixes(provider as CLIProxyProvider);
     } catch {
       // Keep interactive model selection available even when prefix repair fails.
     }
@@ -449,7 +460,7 @@ export async function handleCreate(
   if (!model) {
     if (supportsModelConfig(provider as CLIProxyProvider)) {
       try {
-        await ensureManagedModelPrefixes([provider as CLIProxyProvider]);
+        await ensureVariantManagedModelPrefixes(provider as CLIProxyProvider);
       } catch {
         // Keep variant creation available even when prefix repair fails.
       }
@@ -699,7 +710,7 @@ export async function handleEdit(
       const providerForModel = newProvider || (variant.provider as CLIProxyProfileName);
       if (supportsModelConfig(providerForModel as CLIProxyProvider)) {
         try {
-          await ensureManagedModelPrefixes([providerForModel as CLIProxyProvider]);
+          await ensureVariantManagedModelPrefixes(providerForModel as CLIProxyProvider);
         } catch {
           // Keep edit flow available even when prefix repair fails.
         }

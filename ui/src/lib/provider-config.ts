@@ -144,6 +144,23 @@ export function parseRequestedUpstreamModelRules(value: string): AiProviderModel
     .filter((item) => item.name.length > 0 || item.alias.length > 0);
 }
 
+export function getRequestedUpstreamModelRuleErrors(value: string): string[] {
+  return value
+    .split('\n')
+    .map((line, index) => ({ line: line.trim(), lineNumber: index + 1 }))
+    .filter(({ line }) => line.length > 0 && line.includes('='))
+    .flatMap(({ line, lineNumber }) => {
+      const separatorIndex = line.indexOf('=');
+      const requested = line.slice(0, separatorIndex).trim();
+      const upstream = line.slice(separatorIndex + 1).trim();
+      if (requested && upstream) {
+        return [];
+      }
+
+      return [`Line ${lineNumber}: use requested=upstream or a plain model name.`];
+    });
+}
+
 /**
  * Format stored provider config back into the UI-facing requested=upstream form.
  */

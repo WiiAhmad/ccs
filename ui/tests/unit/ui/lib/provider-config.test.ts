@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   formatRequestedUpstreamModelRules,
+  getRequestedUpstreamModelRuleErrors,
   getRequestedModelId,
   parseRequestedUpstreamModelRules,
 } from '@/lib/provider-config';
@@ -32,5 +33,12 @@ describe('provider model mapping helpers', () => {
     expect(getRequestedModelId({ name: 'minimax/minimax-m2.7', alias: '' })).toBe(
       'minimax/minimax-m2.7'
     );
+  });
+
+  it('rejects malformed requested=upstream lines instead of coercing them', () => {
+    expect(getRequestedUpstreamModelRuleErrors('claude-sonnet-4-5=\n=gpt-5\nqwen3-coder')).toEqual([
+      'Line 1: use requested=upstream or a plain model name.',
+      'Line 2: use requested=upstream or a plain model name.',
+    ]);
   });
 });

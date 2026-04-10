@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   formatRequestedUpstreamModelRules,
   getAiProviderFamilyVisual,
+  getRequestedUpstreamModelRuleErrors,
   getRequestedModelId,
   parseRequestedUpstreamModelRules,
 } from '@/lib/provider-config';
@@ -386,6 +387,12 @@ function buildRawConfigModelArray(value: string) {
   return parsed.length > 0 ? parsed : undefined;
 }
 
+function formatRawConfigModelArray(value: unknown): string {
+  return Array.isArray(value)
+    ? formatRequestedUpstreamModelRules(value as Array<{ name?: string; alias?: string }>)
+    : '';
+}
+
 function buildExcludedModelsArray(value: string) {
   const parsed = parseDelimitedLines(value);
   return parsed.length > 0 ? parsed : undefined;
@@ -472,16 +479,7 @@ function parseEntryConfigDraft(
               .join('\n')
           : '',
       excludedModelsText: '',
-      modelAliasesText: Array.isArray(record.models)
-        ? (record.models as Array<{ name?: string; alias?: string }>)
-            .map((item) =>
-              item.alias?.trim()
-                ? `${item.name?.trim() || ''}=${item.alias.trim()}`
-                : item.name?.trim() || ''
-            )
-            .filter(Boolean)
-            .join('\n')
-        : '',
+      modelAliasesText: formatRawConfigModelArray(record.models),
       apiKey: '',
       apiKeysText: apiKeys.join('\n'),
     };
@@ -503,16 +501,7 @@ function parseEntryConfigDraft(
     excludedModelsText: Array.isArray(record['excluded-models'])
       ? (record['excluded-models'] as string[]).join('\n')
       : '',
-    modelAliasesText: Array.isArray(record.models)
-      ? (record.models as Array<{ name?: string; alias?: string }>)
-          .map((item) =>
-            item.alias?.trim()
-              ? `${item.name?.trim() || ''}=${item.alias.trim()}`
-              : item.name?.trim() || ''
-          )
-          .filter(Boolean)
-          .join('\n')
-      : '',
+    modelAliasesText: formatRawConfigModelArray(record.models),
     apiKey:
       typeof record['api-key'] === 'string' && record['api-key'] !== STORED_SECRET_PLACEHOLDER
         ? record['api-key']
@@ -690,6 +679,10 @@ function EntryInspector({
     () => parseModelAliasLines(draft.modelAliasesText),
     [draft.modelAliasesText]
   );
+  const modelRuleErrors = useMemo(
+    () => getRequestedUpstreamModelRuleErrors(draft.modelAliasesText),
+    [draft.modelAliasesText]
+  );
   const headerRules = useMemo(() => parseKeyValueLines(draft.headersText), [draft.headersText]);
   const excludedModelRules = useMemo(
     () => parseDelimitedLines(draft.excludedModelsText),
@@ -741,7 +734,11 @@ function EntryInspector({
     entry.secretConfigured,
     family.id,
   ]);
-  const canSave = isRawJsonValid && missingRequiredFields.length === 0 && hasChanges;
+  const canSave =
+    isRawJsonValid &&
+    missingRequiredFields.length === 0 &&
+    modelRuleErrors.length === 0 &&
+    hasChanges;
 
   const updateDraft = (updater: (current: EntryEditorDraft) => EntryEditorDraft) => {
     setDraft((current) => updater(current));
@@ -1079,6 +1076,11 @@ function EntryInspector({
                       rows={6}
                     />
                   </EntryEditorField>
+                  {modelRuleErrors.length > 0 ? (
+                    <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                      {modelRuleErrors[0]}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="rounded-xl border bg-background p-4">

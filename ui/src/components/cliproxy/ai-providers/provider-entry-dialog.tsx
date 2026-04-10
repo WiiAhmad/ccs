@@ -3,6 +3,7 @@ import { ProviderLogo } from '@/components/cliproxy/provider-logo';
 import {
   formatRequestedUpstreamModelRules,
   getAiProviderFamilyVisual,
+  getRequestedUpstreamModelRuleErrors,
   parseRequestedUpstreamModelRules,
 } from '@/lib/provider-config';
 import { Badge } from '@/components/ui/badge';
@@ -284,6 +285,10 @@ export function ProviderEntryDialog({
   const [headers, setHeaders] = useState(() => formatHeaders(entry));
   const [excludedModels, setExcludedModels] = useState(() => formatExcludedModels(entry));
   const [modelAliases, setModelAliases] = useState(() => formatModelAliases(entry));
+  const modelRuleErrors = useMemo(
+    () => getRequestedUpstreamModelRuleErrors(modelAliases),
+    [modelAliases]
+  );
   const [advancedOpen, setAdvancedOpen] = useState(() =>
     Boolean(
       entry?.headers.length || entry?.excludedModels.length || entry?.proxyUrl || entry?.prefix
@@ -298,6 +303,10 @@ export function ProviderEntryDialog({
   }, [entry?.secretConfigured, isEditing, supportsOpenAiCompat]);
 
   const handleSubmit = async () => {
+    if (modelRuleErrors.length > 0) {
+      return;
+    }
+
     const nextApiKey = apiKey.trim();
     const nextApiKeys = parseDelimitedLines(apiKeys);
     const preserveSecrets =
@@ -459,6 +468,9 @@ export function ProviderEntryDialog({
                   placeholder={guide.aliasesPlaceholder}
                 />
                 <p className="text-xs text-muted-foreground">{guide.aliasesHelper}</p>
+                {modelRuleErrors.length > 0 ? (
+                  <p className="text-xs text-destructive">{modelRuleErrors[0]}</p>
+                ) : null}
               </div>
             </section>
 
@@ -560,7 +572,11 @@ export function ProviderEntryDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="button" onClick={() => void handleSubmit()} disabled={isSaving}>
+            <Button
+              type="button"
+              onClick={() => void handleSubmit()}
+              disabled={isSaving || modelRuleErrors.length > 0}
+            >
               {isSaving
                 ? 'Saving...'
                 : supportsOpenAiCompat

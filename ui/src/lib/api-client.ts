@@ -9,9 +9,11 @@ import type {
   ListAiProvidersResult,
   UpsertAiProviderEntryInput,
 } from '../../../src/cliproxy/ai-providers';
+import type { ProviderEntitlementEvidence } from '../../../src/cliproxy/provider-entitlement-types';
 
 export const API_BASE_URL = '/api';
 export const API_CONFLICT_ERROR_CODE = 'CONFLICT';
+export type { ProviderEntitlementEvidence };
 
 export class ApiConflictError extends Error {
   readonly code = API_CONFLICT_ERROR_CODE;
@@ -562,6 +564,8 @@ export interface QuotaResult {
   retryable?: boolean;
   /** True if token is expired and needs re-authentication */
   needsReauth?: boolean;
+  /** Richer provider entitlement evidence derived from live/runtime signals */
+  entitlement?: ProviderEntitlementEvidence;
 }
 
 /** Codex rate limit window */
@@ -725,6 +729,8 @@ export interface GeminiCliQuotaResult {
   tierId?: string | null;
   /** Available Google One AI credits when reported by the API */
   creditBalance?: number | null;
+  /** Richer provider entitlement evidence derived from live/runtime signals */
+  entitlement?: ProviderEntitlementEvidence;
   /** Timestamp of fetch */
   lastUpdated: number;
   /** Upstream HTTP status when available */

@@ -1,3 +1,64 @@
+## [7.68.0](https://github.com/kaitranntt/ccs/compare/v7.67.0...v7.68.0) (2026-04-11)
+
+### Features
+
+* **api:** add Hugging Face provider preset ([83255f4](https://github.com/kaitranntt/ccs/commit/83255f477197c9f74b472b36d9a0086030c10713))
+* **cliproxy:** add entitlement evidence for gemini and agy ([bb331ff](https://github.com/kaitranntt/ccs/commit/bb331ff5d8a9ff8bc387599a491335ffe89e7a1c))
+* **cliproxy:** add pinned model routing prefixes ([4d5e528](https://github.com/kaitranntt/ccs/commit/4d5e52828b9d20759bf20e7b4353192fbecfc868))
+* **profiles:** add local runtime readiness checks ([63b67f1](https://github.com/kaitranntt/ccs/commit/63b67f1c1c270f3e4e6c1a676e1c9256f2577d99))
+* **ui:** add paused filter to account flow viz ([a169917](https://github.com/kaitranntt/ccs/commit/a169917692016e1a01560c13c95a554da430cd38))
+* **ui:** reposition providers around quality and local lanes ([ad70f93](https://github.com/kaitranntt/ccs/commit/ad70f93b1b95edb8d6f029a7613a44f3d2db83ab))
+
+### Bug Fixes
+
+* **api:** constrain preset target defaults ([52ac29e](https://github.com/kaitranntt/ccs/commit/52ac29e7a8a6f7450eb3c1daa357d84d0b03031f))
+* **cliproxy:** align AGY preset aliases ([25dd9ab](https://github.com/kaitranntt/ccs/commit/25dd9ab9e14d7c4131c0cace99222346bfb006bc))
+* **cliproxy:** attach entitlement evidence to agy failures ([7c4545e](https://github.com/kaitranntt/ccs/commit/7c4545eb1b35914a20762e14fdbd7832828b1324))
+* **cliproxy:** cover managed prefix review follow-up ([b6aa6fb](https://github.com/kaitranntt/ccs/commit/b6aa6fb0d4471b68fb795ef4ba2449f2a9f72788))
+* **cliproxy:** dedupe variant prefix sync ([eaddfc4](https://github.com/kaitranntt/ccs/commit/eaddfc467fa4380d5c642ad7063442b6edc22efc))
+* **cliproxy:** harden pinned routing follow-up ([40c4816](https://github.com/kaitranntt/ccs/commit/40c4816acf36b3b79f13bf32862f7c88ed7debf4))
+* **cliproxy:** harden routing prefix sync and UI pinning ([0c10cb6](https://github.com/kaitranntt/ccs/commit/0c10cb6f47d23db33cbce17456d46aee1843b9ae))
+* **cliproxy:** keep new live provider models selectable ([34d7044](https://github.com/kaitranntt/ccs/commit/34d70442bf132c6772dc528875377e4d16a221ec))
+* **cliproxy:** prefer live entitlement tier in account badges ([7330fdb](https://github.com/kaitranntt/ccs/commit/7330fdbf2830911bcac09826cabf5929cc741be8))
+* **cliproxy:** preserve entitlement evidence on agy failures ([b56b58c](https://github.com/kaitranntt/ccs/commit/b56b58c0679d888baa7daa7526f8c06f2a49e16c))
+* **cliproxy:** propagate agy entitlement failure metadata ([506b61e](https://github.com/kaitranntt/ccs/commit/506b61eca61381b8717d16b97be94b193e9fcbbf))
+* **cliproxy:** refresh non-default gemini quota tokens ([b6fb443](https://github.com/kaitranntt/ccs/commit/b6fb443f572cc5c1bb4e3763abd1aa6fa3ba14e5))
+* **cliproxy:** use type-only account provider import ([92a2478](https://github.com/kaitranntt/ccs/commit/92a24786d674ca647caa44db9ee2ce638b843b55))
+* **image-analysis:** preserve default runtime deps ([e090c8b](https://github.com/kaitranntt/ccs/commit/e090c8b0d4e65eda3c9b4dcdd4ef0521c96a68b9))
+* **image-analysis:** tolerate missing auth init dependency ([2f02ddf](https://github.com/kaitranntt/ccs/commit/2f02ddfb74062aefa4d006ca16bec9a94a2272c7))
+* **review:** harden quota retry and tooltip edge cases ([7ac6d0a](https://github.com/kaitranntt/ccs/commit/7ac6d0a4d4a08113b48c008c1850dc6b089b66d1))
+* sanitize cliproxy provider model pickers ([0e4677f](https://github.com/kaitranntt/ccs/commit/0e4677f558a2231b7eef7eb3de5c7f0336bbb041))
+* **ui:** accept partial raw model records ([42d5724](https://github.com/kaitranntt/ccs/commit/42d5724f34c03c48e1d5d963a85f7cf0a164e9b0)), closes [#941](https://github.com/kaitranntt/ccs/issues/941)
+* **ui:** add paused filter locale strings ([3687de0](https://github.com/kaitranntt/ccs/commit/3687de062581b9968b3858b8c51a6cdbb23edcd3))
+* **ui:** address provider lane review notes ([5f9bafe](https://github.com/kaitranntt/ccs/commit/5f9bafe9cde488aed26e3c03be8ff84852723e74))
+* **ui:** clarify filtered flow viz metrics ([94eda99](https://github.com/kaitranntt/ccs/commit/94eda996e3c0cee8cca50b5cc2c49f7284c7524e))
+* **ui:** guard optional raw model fields ([01c1193](https://github.com/kaitranntt/ccs/commit/01c1193a994cc6efc80135590d5bacaf3b78deed)), closes [#941](https://github.com/kaitranntt/ccs/issues/941)
+* **ui:** harden provider model alias editing ([92a769d](https://github.com/kaitranntt/ccs/commit/92a769d773a8ec63fd02744aff60d3691df7cf94)), closes [#941](https://github.com/kaitranntt/ccs/issues/941)
+* **ui:** preserve requested provider model aliases ([49c4338](https://github.com/kaitranntt/ccs/commit/49c4338f28f5b22ea8834d103582eccd2ad54c62)), closes [#941](https://github.com/kaitranntt/ccs/issues/941)
+* **ui:** type shared AGY compatibility lookup ([c078a96](https://github.com/kaitranntt/ccs/commit/c078a9633736faa2b5e45d6a7345d3d2883c6a7b))
+* **update:** align no-update dependency injection ([94bcad2](https://github.com/kaitranntt/ccs/commit/94bcad2d1a7c843be5a75aba1140d997f7fcc0bd))
+* **update:** harden install verification flow ([a4496ff](https://github.com/kaitranntt/ccs/commit/a4496ff1d944fbe989d1ae18f7f78eb470846731))
+* **update:** isolate updater test dependencies ([59e04cb](https://github.com/kaitranntt/ccs/commit/59e04cb56f4d8c8cde6733bc15d3b8d9be94ab9f))
+* **update:** target the current CCS installation ([2aaabb2](https://github.com/kaitranntt/ccs/commit/2aaabb2deb03253493a19191690c001113a44040))
+
+### Documentation
+
+* **cliproxy:** clarify gemini and agy tier semantics ([f9c61e0](https://github.com/kaitranntt/ccs/commit/f9c61e0faceae2532798bcfe7ff87d458024c6a3))
+* **roadmap:** note cliproxy routing prefix clarity ([b8a8f84](https://github.com/kaitranntt/ccs/commit/b8a8f841536f89386e3452261037f0fdcc389059))
+* **roadmap:** record Hugging Face preset support ([414e8c8](https://github.com/kaitranntt/ccs/commit/414e8c80f5ed5f4ed91766de85603abaa195bcbf))
+
+### Code Refactoring
+
+* **ui:** align visible provider flow data ([aedccec](https://github.com/kaitranntt/ccs/commit/aedccec0414fdffac049e4db8130e4f40b2cd744))
+
+### Tests
+
+* **ci:** isolate config env and cli entry fallbacks ([b8aa59a](https://github.com/kaitranntt/ccs/commit/b8aa59a8f0d56e3a2589bf7714d54392a0325dd8))
+* **ci:** stop leaking update-command module mocks ([ef75172](https://github.com/kaitranntt/ccs/commit/ef751723f5088ff39184e322cb69aa8186cf2053))
+* **cliproxy:** cover managed pinned route hints ([d87a126](https://github.com/kaitranntt/ccs/commit/d87a126938d9d71b3bb0de163e4265111fa09944))
+* **cliproxy:** isolate session tracker config env ([4b9fa4e](https://github.com/kaitranntt/ccs/commit/4b9fa4e45787950c73d6b9792d8e1bf2c25a7f5b))
+* **ui:** cover paused account flow viz filtering ([7b2743b](https://github.com/kaitranntt/ccs/commit/7b2743b845a822356f18de854ea201c72eb1f542))
+
 ## [7.67.0](https://github.com/kaitranntt/ccs/compare/v7.66.1...v7.67.0) (2026-04-09)
 
 ### Features

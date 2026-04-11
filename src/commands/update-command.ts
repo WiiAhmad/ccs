@@ -237,16 +237,16 @@ function handleNoUpdate(reason: string | undefined): void {
 }
 
 /**
- * Perform update via npm/yarn/pnpm/bun
+ * Perform update verification against the current install.
  */
-function verifyCurrentInstallVersion(
+async function verifyCurrentInstallVersion(
   currentInstall: CurrentInstall,
   targetTag: string,
   expectedVersion?: string,
   previousState?: InstalledPackageState,
   isReinstall: boolean = false,
   deps: UpdateCommandDeps = defaultDeps
-): void {
+): Promise<void> {
   const nextState = deps.readInstalledPackageState(currentInstall);
   const installedVersion = nextState.version;
   if (!installedVersion) {
@@ -259,6 +259,7 @@ function verifyCurrentInstallVersion(
     console.log(color(`  ${deps.formatManualUpdateCommand(targetTag, currentInstall)}`, 'command'));
     console.log('');
     process.exit(1);
+    return;
   }
 
   const installChanged =
@@ -268,12 +269,26 @@ function verifyCurrentInstallVersion(
       previousState.scriptMtimeMs !== nextState.scriptMtimeMs);
 
   if (expectedVersion && installedVersion !== expectedVersion) {
-    if (previousState?.version && installedVersion !== previousState.version) {
+    const postUpdateResult = await deps.checkForUpdates(
+      installedVersion,
+      true,
+      'npm',
+      targetTag as TargetTag
+    );
+
+    if (postUpdateResult.status === 'no_update') {
+      return;
+    }
+
+    if (
+      postUpdateResult.status === 'update_available' &&
+      postUpdateResult.latest === installedVersion
+    ) {
       return;
     }
 
     const comparison = deps.compareVersionsWithPrerelease(installedVersion, expectedVersion);
-    if (comparison < 0) {
+    if (comparison < 0 || installedVersion === previousState?.version) {
       console.log('');
       console.log(
         fail(
@@ -294,6 +309,7 @@ function verifyCurrentInstallVersion(
       );
       console.log('');
       process.exit(1);
+      return;
     }
   }
 
@@ -305,16 +321,55 @@ function verifyCurrentInstallVersion(
   ) {
     console.log('');
     console.log(
-      fail(
-        `Reinstall completed, but CCS could not verify that the current installation changed from ${previousState.version}.`
+      warn(
+        `Reinstall completed, but CCS could not prove that the current installation changed from ${previousState.version}. Verify the current binary manually if this reinstall was meant to repair a same-version install.`
       )
     );
-    console.log('');
-    console.log('Re-run manually against the current install:');
-    console.log(color(`  ${deps.formatManualUpdateCommand(targetTag, currentInstall)}`, 'command'));
-    console.log('');
-    process.exit(1);
   }
+}
+
+function runChildProcess(
+  deps: UpdateCommandDeps,
+  command: string,
+  args: string[],
+  options: {
+    isWindows: boolean;
+    env: NodeJS.ProcessEnv;
+    filterCleanupWarnings?: boolean;
+  }
+): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const { isWindows, env, filterCleanupWarnings = false } = options;
+    const child = isWindows
+      ? deps.spawn(`${command} ${args.join(' ')}`, [], {
+          stdio: ['inherit', 'inherit', 'pipe'],
+          shell: true,
+          env: { ...env, NODE_NO_WARNINGS: '1' },
+        })
+      : deps.spawn(command, args, { stdio: 'inherit', env });
+
+    if (isWindows && filterCleanupWarnings && child.stderr) {
+      let stderrBuffer = '';
+      child.stderr.on('data', (data: Buffer) => {
+        stderrBuffer += data.toString();
+        const lines = stderrBuffer.split('\n');
+        stderrBuffer = lines.pop() || '';
+        for (const line of lines) {
+          if (!/npm warn cleanup/i.test(line)) {
+            process.stderr.write(line + '\n');
+          }
+        }
+      });
+      child.stderr.on('close', () => {
+        if (stderrBuffer && !/npm warn cleanup/i.test(stderrBuffer)) {
+          process.stderr.write(stderrBuffer);
+        }
+      });
+    }
+
+    child.on('error', reject);
+    child.on('exit', (code) => resolve(code ?? 0));
+  });
 }
 
 async function performNpmUpdate(
@@ -371,86 +426,6 @@ async function performNpmUpdate(
 
   const isWindows = process.platform === 'win32';
 
-  const performUpdate = (): void => {
-    // On Windows, use shell with full command string to avoid deprecation warning
-    // Also suppress Node deprecation warnings that may come from package managers
-    // Pipe stderr on Windows to filter npm cleanup warnings (EPERM on native modules)
-    const child = isWindows
-      ? deps.spawn(`${updateCommand} ${updateArgs.join(' ')}`, [], {
-          stdio: ['inherit', 'inherit', 'pipe'],
-          shell: true,
-          env: { ...childEnv, NODE_NO_WARNINGS: '1' },
-        })
-      : deps.spawn(updateCommand, updateArgs, { stdio: 'inherit', env: childEnv });
-
-    // On Windows, filter stderr to hide npm cleanup warnings (EPERM on bcrypt.node etc.)
-    // These warnings are cosmetic - update succeeds despite file locking by antivirus/indexing
-    // Use line-buffering to handle chunk splitting (data events don't guarantee message boundaries)
-    if (isWindows && child.stderr) {
-      let stderrBuffer = '';
-      child.stderr.on('data', (data: Buffer) => {
-        stderrBuffer += data.toString();
-        const lines = stderrBuffer.split('\n');
-        stderrBuffer = lines.pop() || ''; // Keep incomplete line in buffer
-        for (const line of lines) {
-          // Skip npm cleanup warnings (EPERM, ENOTEMPTY, EBUSY on native module prebuilds)
-          if (!/npm warn cleanup/i.test(line)) {
-            process.stderr.write(line + '\n');
-          }
-        }
-      });
-      child.stderr.on('close', () => {
-        // Flush remaining buffer on stream close
-        if (stderrBuffer && !/npm warn cleanup/i.test(stderrBuffer)) {
-          process.stderr.write(stderrBuffer);
-        }
-      });
-    }
-
-    child.on('exit', (code) => {
-      if (code === 0) {
-        if (expectedVersion || previousState?.version) {
-          verifyCurrentInstallVersion(
-            currentInstall,
-            targetTag,
-            expectedVersion,
-            previousState,
-            isReinstall,
-            deps
-          );
-        }
-        console.log('');
-        console.log(ok(`${isReinstall ? 'Reinstall' : 'Update'} successful!`));
-        console.log('');
-        console.log(`Run ${color('ccs --version', 'command')} to verify`);
-        console.log(info(`Tip: Use ${color('ccs config', 'command')} for web-based configuration`));
-        console.log('');
-      } else {
-        console.log('');
-        console.log(fail(`${isReinstall ? 'Reinstall' : 'Update'} failed`));
-        console.log('');
-        console.log('Try manually:');
-        console.log(
-          color(`  ${deps.formatManualUpdateCommand(targetTag, currentInstall)}`, 'command')
-        );
-        console.log('');
-      }
-      process.exit(code || 0);
-    });
-
-    child.on('error', () => {
-      console.log('');
-      console.log(fail(`Failed to run ${packageManager} ${isReinstall ? 'reinstall' : 'update'}`));
-      console.log('');
-      console.log('Try manually:');
-      console.log(
-        color(`  ${deps.formatManualUpdateCommand(targetTag, currentInstall)}`, 'command')
-      );
-      console.log('');
-      process.exit(1);
-    });
-  };
-
   if (cacheCommand && cacheArgs) {
     // For bun on Windows, we pre-remove instead of cache clear
     const isBunPreRemove = packageManager === 'bun' && cacheArgs.includes('remove');
@@ -462,27 +437,62 @@ async function performNpmUpdate(
       : 'Cache clearing failed, proceeding anyway...';
 
     console.log(info(stepMessage));
-    // On Windows, use shell with full command string to avoid deprecation warning
-    const cacheChild = isWindows
-      ? deps.spawn(`${cacheCommand} ${cacheArgs.join(' ')}`, [], {
-          stdio: 'inherit',
-          shell: true,
-          env: { ...childEnv, NODE_NO_WARNINGS: '1' },
-        })
-      : deps.spawn(cacheCommand, cacheArgs, { stdio: 'inherit', env: childEnv });
-
-    cacheChild.on('exit', (code) => {
-      if (code !== 0) {
+    try {
+      const cacheCode = await runChildProcess(deps, cacheCommand, cacheArgs, {
+        isWindows,
+        env: childEnv,
+      });
+      if (cacheCode !== 0) {
         console.log(warn(failMessage));
       }
-      performUpdate();
+    } catch {
+      console.log(warn(failMessage));
+    }
+  }
+
+  try {
+    const exitCode = await runChildProcess(deps, updateCommand, updateArgs, {
+      isWindows,
+      env: childEnv,
+      filterCleanupWarnings: true,
     });
 
-    cacheChild.on('error', () => {
-      console.log(warn(failMessage));
-      performUpdate();
-    });
-  } else {
-    performUpdate();
+    if (exitCode === 0) {
+      if (expectedVersion || previousState?.version) {
+        await verifyCurrentInstallVersion(
+          currentInstall,
+          targetTag,
+          expectedVersion,
+          previousState,
+          isReinstall,
+          deps
+        );
+      }
+      console.log('');
+      console.log(ok(`${isReinstall ? 'Reinstall' : 'Update'} successful!`));
+      console.log('');
+      console.log(`Run ${color('ccs --version', 'command')} to verify`);
+      console.log(info(`Tip: Use ${color('ccs config', 'command')} for web-based configuration`));
+      console.log('');
+    } else {
+      console.log('');
+      console.log(fail(`${isReinstall ? 'Reinstall' : 'Update'} failed`));
+      console.log('');
+      console.log('Try manually:');
+      console.log(
+        color(`  ${deps.formatManualUpdateCommand(targetTag, currentInstall)}`, 'command')
+      );
+      console.log('');
+    }
+
+    process.exit(exitCode || 0);
+  } catch {
+    console.log('');
+    console.log(fail(`Failed to run ${packageManager} ${isReinstall ? 'reinstall' : 'update'}`));
+    console.log('');
+    console.log('Try manually:');
+    console.log(color(`  ${deps.formatManualUpdateCommand(targetTag, currentInstall)}`, 'command'));
+    console.log('');
+    process.exit(1);
   }
 }

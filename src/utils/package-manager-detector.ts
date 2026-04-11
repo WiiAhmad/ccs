@@ -123,6 +123,12 @@ function inferInstallFromPath(
     normalizedPath.includes('/global/') &&
     normalizedPath.includes('/node_modules/@kaitranntt/ccs')
   ) {
+    const pnpmFlatMatch = normalizedPath.match(/\/global\/([^/]+)\/node_modules\/@kaitranntt\/ccs/);
+
+    if (!pnpmFlatMatch || pnpmFlatMatch[1] === 'lib') {
+      return null;
+    }
+
     return {
       manager: 'pnpm',
       prefix: getPrefixBeforeMarker(targetPath, `${path.sep}global${path.sep}`),

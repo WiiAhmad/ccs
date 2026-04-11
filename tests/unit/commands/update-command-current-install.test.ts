@@ -3,6 +3,7 @@ import { handleUpdateCommand, type UpdateCommandDeps } from '../../../src/comman
 
 let logLines: string[] = [];
 let spawnCalls: Array<{ command: string; args: string[]; env?: NodeJS.ProcessEnv }> = [];
+let exitCodes: number[] = [];
 let originalConsoleLog: typeof console.log;
 let originalProcessExit: typeof process.exit;
 
@@ -100,6 +101,7 @@ function createDeps(): UpdateCommandDeps {
 beforeEach(() => {
   logLines = [];
   spawnCalls = [];
+  exitCodes = [];
   stateReads = 0;
   scenario = {
     beforeState: { version: '7.67.0-dev.5', packageJsonMtimeMs: 100, scriptMtimeMs: 100 },
@@ -120,7 +122,7 @@ beforeEach(() => {
   };
 
   process.exit = ((code?: number) => {
-    throw new Error(`process.exit(${code ?? 0})`);
+    exitCodes.push(code ?? 0);
   }) as typeof process.exit;
 });
 
@@ -131,15 +133,14 @@ afterEach(() => {
 
 describe('update-command current install handling', () => {
   it('updates through the current install manager and prefix', async () => {
-    await expect(handleUpdateCommand({ beta: true }, createDeps())).rejects.toThrow(
-      'process.exit(0)'
-    );
+    await handleUpdateCommand({ beta: true }, createDeps());
 
     const installCall = spawnCalls.find((call) => call.args.includes('install'));
 
     expect(installCall?.command).toBe('npm');
     expect(installCall?.args).toEqual(['install', '-g', '@kaitranntt/ccs@dev']);
     expect(installCall?.env?.npm_config_prefix).toBe('/tmp/ccs-prefix');
+    expect(exitCodes).toContain(0);
   });
 
   it('fails when another manager updated elsewhere but the current binary stayed stale', async () => {
@@ -148,14 +149,13 @@ describe('update-command current install handling', () => {
       afterState: { version: '7.67.0-dev.5', packageJsonMtimeMs: 100, scriptMtimeMs: 100 },
     };
 
-    await expect(handleUpdateCommand({ beta: true }, createDeps())).rejects.toThrow(
-      'process.exit(1)'
-    );
+    await handleUpdateCommand({ beta: true }, createDeps());
 
     expect(logLines.join('\n')).toContain('outside the current installation');
     expect(logLines.join('\n')).toContain(
       'NPM_CONFIG_PREFIX=/tmp/ccs-prefix npm install -g @kaitranntt/ccs@dev'
     );
+    expect(exitCodes).toContain(1);
   });
 
   it('keeps force mode under exact target-version verification', async () => {
@@ -164,39 +164,36 @@ describe('update-command current install handling', () => {
       afterState: { version: '7.67.0-dev.5', packageJsonMtimeMs: 100, scriptMtimeMs: 100 },
     };
 
-    await expect(handleUpdateCommand({ force: true, beta: true }, createDeps())).rejects.toThrow(
-      'process.exit(1)'
-    );
+    await handleUpdateCommand({ force: true, beta: true }, createDeps());
 
     expect(logLines.join('\n')).toContain('outside the current installation');
+    expect(exitCodes).toContain(1);
   });
 
-  it('fails force mode when target resolution says no update and the current install stays unchanged', async () => {
+  it('warns but succeeds when target resolution says no update and the current install stays unchanged', async () => {
     scenario = {
       beforeState: { version: '7.67.0-dev.5', packageJsonMtimeMs: 100, scriptMtimeMs: 100 },
       afterState: { version: '7.67.0-dev.5', packageJsonMtimeMs: 100, scriptMtimeMs: 100 },
     };
     updateCheckResult = { status: 'no_update' };
 
-    await expect(handleUpdateCommand({ force: true, beta: true }, createDeps())).rejects.toThrow(
-      'process.exit(1)'
-    );
+    await handleUpdateCommand({ force: true, beta: true }, createDeps());
 
-    expect(logLines.join('\n')).toContain('could not verify that the current installation changed');
+    expect(logLines.join('\n')).toContain('could not prove that the current installation changed');
+    expect(exitCodes).toContain(0);
   });
 
-  it('fails force mode when target version resolution fails and the current install stays unchanged', async () => {
+  it('warns but succeeds when target version resolution fails and the current install stays unchanged', async () => {
     scenario = {
       beforeState: { version: '7.67.0-dev.5', packageJsonMtimeMs: 100, scriptMtimeMs: 100 },
       afterState: { version: '7.67.0-dev.5', packageJsonMtimeMs: 100, scriptMtimeMs: 100 },
     };
     updateCheckResult = { status: 'check_failed', message: 'network' };
 
-    await expect(handleUpdateCommand({ force: true, beta: true }, createDeps())).rejects.toThrow(
-      'process.exit(1)'
-    );
+    await handleUpdateCommand({ force: true, beta: true }, createDeps());
 
-    expect(logLines.join('\n')).toContain('could not verify that the current installation changed');
+    expect(logLines.join('\n')).toContain('could not prove that the current installation changed');
+    expect(exitCodes).toContain(0);
   });
 
   it('accepts a newer installed version when the dist-tag moves during update', async () => {
@@ -205,11 +202,10 @@ describe('update-command current install handling', () => {
       afterState: { version: '7.67.1-dev.0', packageJsonMtimeMs: 200, scriptMtimeMs: 200 },
     };
 
-    await expect(handleUpdateCommand({ beta: true }, createDeps())).rejects.toThrow(
-      'process.exit(0)'
-    );
+    await handleUpdateCommand({ beta: true }, createDeps());
 
     expect(logLines.join('\n')).not.toContain('outside the current installation');
+    expect(exitCodes).toContain(0);
   });
 
   it('accepts force reinstall when the version stays the same but the current install files change', async () => {
@@ -219,13 +215,12 @@ describe('update-command current install handling', () => {
     };
     updateCheckResult = { status: 'no_update' };
 
-    await expect(handleUpdateCommand({ force: true, beta: true }, createDeps())).rejects.toThrow(
-      'process.exit(0)'
-    );
+    await handleUpdateCommand({ force: true, beta: true }, createDeps());
 
     expect(logLines.join('\n')).not.toContain(
       'could not verify that the current installation changed'
     );
+    expect(exitCodes).toContain(0);
   });
 
   it.each([
@@ -241,9 +236,7 @@ describe('update-command current install handling', () => {
         prefix: envValue,
       };
 
-      await expect(handleUpdateCommand({ beta: true }, createDeps())).rejects.toThrow(
-        'process.exit(0)'
-      );
+      await handleUpdateCommand({ beta: true }, createDeps());
 
       const updateCall = spawnCalls.find(
         (call) =>
@@ -252,6 +245,7 @@ describe('update-command current install handling', () => {
 
       expect(updateCall?.args).toContain(expectedArg);
       expect(updateCall?.env?.[envKey]).toBe(envValue);
+      expect(exitCodes).toContain(0);
     }
   );
 });

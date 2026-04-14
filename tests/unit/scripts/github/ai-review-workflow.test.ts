@@ -20,6 +20,7 @@ describe('PR-Agent review lane migration', () => {
     expect(workflow).toContain('name: AI Code Review');
     expect(workflow).toContain('runs-on: [self-hosted, cliproxy]');
     expect(workflow).toContain('uses: qodo-ai/pr-agent');
+    expect(workflow).toContain('uses: actions/create-github-app-token@v1');
     expect(workflow).toContain('OPENAI.API_BASE');
     expect(workflow).toContain('OPENAI_KEY');
     expect(workflow).toContain('vars.AI_REVIEW_BASE_URL');
@@ -28,6 +29,10 @@ describe('PR-Agent review lane migration', () => {
     expect(workflow).toContain('github_action_config.auto_review');
     expect(workflow).toContain("github.event.comment.body == '/review'");
     expect(workflow).toContain('github.event.comment.author_association');
+    expect(workflow).toContain("format('skip-{0}', github.run_id)");
+    expect(workflow).toContain("format('dispatch-{0}', github.run_id)");
+    expect(workflow).toContain('CCS_REVIEWER_APP_ID');
+    expect(workflow).toContain('CCS_REVIEWER_PRIVATE_KEY');
     expect(workflow).not.toContain('uses: anthropics/claude-code-action@v1');
 
     expect(config).toContain('[config]');

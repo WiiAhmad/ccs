@@ -5,6 +5,7 @@ import type { UnifiedQuotaResult } from '@/hooks/use-cliproxy-stats';
 import { getAccountIdentityPresentation } from '@/lib/account-identity';
 import { cn } from '@/lib/utils';
 import { Pause, Star, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { AccountQuotaPanel } from './account-quota-panel';
 
@@ -53,9 +54,12 @@ function getTierBadgeClass(tier: AccountTier | undefined) {
     : 'bg-yellow-500/15 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400';
 }
 
-function getCompactAudienceBadgeLabel(audience: 'business' | 'personal' | 'unknown') {
-  if (audience === 'business') return 'Biz';
-  if (audience === 'personal') return 'Pers';
+function getCompactAudienceBadgeLabel(
+  audience: 'business' | 'personal' | 'unknown',
+  t: (key: string) => string
+) {
+  if (audience === 'business') return t('accountSurfaceCard.business');
+  if (audience === 'personal') return t('accountSurfaceCard.personal');
   return '?';
 }
 
@@ -95,6 +99,7 @@ export function AccountSurfaceCard({
   quotaInsetClassName,
   className,
 }: AccountSurfaceCardProps) {
+  const { t } = useTranslation();
   const identity = getAccountIdentityPresentation(accountId, email, tokenFile);
   const title = displayEmail || identity.email || accountId;
   const normalizedProvider = provider.toLowerCase();
@@ -129,11 +134,12 @@ export function AccountSurfaceCard({
               : 'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-300'
           )}
         >
-          {getCompactAudienceBadgeLabel(identity.audience)}
+          {getCompactAudienceBadgeLabel(identity.audience, t)}
         </span>
       )}
       {paused && (
         <span className="text-[8px] font-semibold px-1.5 py-0.5 rounded-md shrink-0 bg-amber-500/15 text-amber-700 dark:bg-amber-500/25 dark:text-amber-300">
+          {/* TODO i18n: missing key for compact "Paused" badge */}
           Paused
         </span>
       )}
@@ -205,6 +211,7 @@ export function AccountSurfaceCard({
               {!isCompact && isDefault && (
                 <Badge variant="secondary" className="text-[10px] h-4 px-1.5 gap-0.5">
                   <Star className="w-2.5 h-2.5 fill-current" />
+                  {/* TODO i18n: missing key for "Default" badge */}
                   Default
                 </Badge>
               )}
@@ -214,6 +221,7 @@ export function AccountSurfaceCard({
                   className="text-[10px] h-4 px-1.5 border-yellow-500 text-yellow-600"
                 >
                   <Pause className="w-2 h-2 mr-0.5" />
+                  {/* TODO i18n: missing key for "Paused" badge */}
                   Paused
                 </Badge>
               )}

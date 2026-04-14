@@ -294,6 +294,7 @@ export function AddAccountDialog({
     }
     if (requiresAgyResponsibilityFlow && !isAgyRiskChecklistComplete) {
       setLocalError(
+        // TODO i18n: missing key for AGY responsibility error
         'Complete all Antigravity responsibility steps before authenticating this provider.'
       );
       return;
@@ -431,6 +432,7 @@ export function AddAccountDialog({
               <p className="text-xs text-muted-foreground">{kiroMethodOption.description}</p>
               {isKiroSocial && (
                 <p className="text-xs text-muted-foreground">
+                  {/* TODO i18n: missing key for Kiro social browser hint */}
                   If your browser does not return automatically after login, CCS can accept the
                   final
                   <span className="mx-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
@@ -445,7 +447,9 @@ export function AddAccountDialog({
           {isKiroIdc && !showAuthUI && (
             <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4">
               <div className="space-y-2">
-                <Label htmlFor="kiro-idc-start-url">IDC Start URL</Label>
+                <Label htmlFor="kiro-idc-start-url">
+                  {/* TODO i18n: missing key */}IDC Start URL
+                </Label>
                 <Input
                   id="kiro-idc-start-url"
                   value={kiroIDCStartUrl}
@@ -457,12 +461,12 @@ export function AddAccountDialog({
                   disabled={isPending}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Required for organization IAM Identity Center login.
+                  {/* TODO i18n: missing key */}Required for organization IAM Identity Center login.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="kiro-idc-region">IDC Region</Label>
+                <Label htmlFor="kiro-idc-region">{/* TODO i18n: missing key */}IDC Region</Label>
                 <Input
                   id="kiro-idc-region"
                   value={kiroIDCRegion}
@@ -474,12 +478,13 @@ export function AddAccountDialog({
                   disabled={isPending}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Optional. Leave blank to use the upstream default region.
+                  {/* TODO i18n: missing key */}Optional. Leave blank to use the upstream default
+                  region.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="kiro-idc-flow">IDC Flow</Label>
+                <Label htmlFor="kiro-idc-flow">{/* TODO i18n: missing key */}IDC Flow</Label>
                 <Select
                   value={kiroIDCFlow}
                   onValueChange={(value) => {
@@ -488,16 +493,20 @@ export function AddAccountDialog({
                   }}
                 >
                   <SelectTrigger id="kiro-idc-flow">
-                    <SelectValue placeholder="Select IDC flow" />
+                    <SelectValue placeholder="{/* TODO i18n: missing key */}Select IDC flow" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="authcode">Authorization Code</SelectItem>
-                    <SelectItem value="device">Device Code</SelectItem>
+                    <SelectItem value="authcode">
+                      {/* TODO i18n: missing key */}Authorization Code
+                    </SelectItem>
+                    <SelectItem value="device">
+                      {/* TODO i18n: missing key */}Device Code
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Auth Code opens a browser and may need the final callback URL pasted back. Device
-                  Code shows a verification code instead.
+                  {/* TODO i18n: missing key */}Auth Code opens a browser and may need the final
+                  callback URL pasted back. Device Code shows a verification code instead.
                 </p>
               </div>
             </div>
@@ -540,7 +549,8 @@ export function AddAccountDialog({
                   {authFlow.isDeviceCodeFlow
                     ? t('addAccountDialog.deviceCodeHint')
                     : isKiroSocial
-                      ? 'Complete sign-in in your browser. If it does not return automatically, paste the final kiro:// callback URL below.'
+                      ? // TODO i18n: missing key for Kiro social callback hint
+                        'Complete sign-in in your browser. If it does not return automatically, paste the final kiro:// callback URL below.'
                       : t('addAccountDialog.browserHint')}
                 </p>
               </div>
@@ -590,7 +600,8 @@ export function AddAccountDialog({
                   <div className="space-y-2">
                     <Label htmlFor="callback-url" className="text-xs">
                       {isKiroSocial
-                        ? 'Browser did not return? Paste the final kiro:// callback URL:'
+                        ? // TODO i18n: missing key
+                          'Browser did not return? Paste the final kiro:// callback URL:'
                         : t('addAccountDialog.redirectPasteLabel')}
                     </Label>
                     <Input
@@ -626,7 +637,8 @@ export function AddAccountDialog({
               {!authFlow.authUrl && !authFlow.isDeviceCodeFlow && (
                 <p className="text-xs text-center text-muted-foreground">
                   {isKiroSocial
-                    ? 'Preparing the Kiro sign-in URL. If it does not open automatically, it will appear here shortly.'
+                    ? // TODO i18n: missing key for Kiro social preparing URL
+                      'Preparing the Kiro sign-in URL. If it does not open automatically, it will appear here shortly.'
                     : t('addAccountDialog.preparingUrl')}
                 </p>
               )}

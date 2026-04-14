@@ -61,41 +61,41 @@ wire_api = "responses"`;
 export const KNOWN_CODEX_FEATURES: CodexFeatureCatalogEntry[] = [
   {
     name: 'multi_agent',
-    label: 'Multi-agent',
-    description: 'Enable subagent collaboration tools.',
+    label: 'Multi-agent', // TODO i18n: missing key for codex feature
+    description: 'Enable subagent collaboration tools.', // TODO i18n: missing key
   },
   {
     name: 'unified_exec',
-    label: 'Unified exec',
-    description: 'Use the PTY-backed unified exec tool.',
+    label: 'Unified exec', // TODO i18n: missing key for codex feature
+    description: 'Use the PTY-backed unified exec tool.', // TODO i18n: missing key
   },
   {
     name: 'shell_snapshot',
-    label: 'Shell snapshot',
-    description: 'Reuse shell environment snapshots.',
+    label: 'Shell snapshot', // TODO i18n: missing key for codex feature
+    description: 'Reuse shell environment snapshots.', // TODO i18n: missing key
   },
   {
     name: 'apply_patch_freeform',
-    label: 'Apply patch',
-    description: 'Enable freeform apply_patch edits.',
+    label: 'Apply patch', // TODO i18n: missing key for codex feature
+    description: 'Enable freeform apply_patch edits.', // TODO i18n: missing key
   },
-  { name: 'js_repl', label: 'JS REPL', description: 'Enable the Node-backed JavaScript REPL.' },
+  { name: 'js_repl', label: 'JS REPL', description: 'Enable the Node-backed JavaScript REPL.' }, // TODO i18n: missing keys
   {
     name: 'runtime_metrics',
-    label: 'Runtime metrics',
-    description: 'Collect Codex runtime metrics.',
+    label: 'Runtime metrics', // TODO i18n: missing key for codex feature
+    description: 'Collect Codex runtime metrics.', // TODO i18n: missing key
   },
   {
     name: 'prevent_idle_sleep',
-    label: 'Prevent idle sleep',
-    description: 'Keep the machine awake while active.',
+    label: 'Prevent idle sleep', // TODO i18n: missing key for codex feature
+    description: 'Keep the machine awake while active.', // TODO i18n: missing key
   },
-  { name: 'fast_mode', label: 'Fast mode', description: 'Allow the fast service tier path.' },
-  { name: 'apps', label: 'Apps', description: 'Enable ChatGPT Apps and connectors support.' },
+  { name: 'fast_mode', label: 'Fast mode', description: 'Allow the fast service tier path.' }, // TODO i18n: missing keys
+  { name: 'apps', label: 'Apps', description: 'Enable ChatGPT Apps and connectors support.' }, // TODO i18n: missing keys
   {
     name: 'smart_approvals',
-    label: 'Smart approvals',
-    description: 'Route eligible approvals through the guardian flow.',
+    label: 'Smart approvals', // TODO i18n: missing key for codex feature
+    description: 'Route eligible approvals through the guardian flow.', // TODO i18n: missing key
   },
 ];
 

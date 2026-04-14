@@ -173,7 +173,10 @@ export function AccountCard({
       <div
         className="inline-flex shrink-0 items-center overflow-hidden rounded-md border border-border/60 bg-muted/60 shadow-sm shadow-black/5 dark:bg-zinc-900/80"
         title={groupedHeaderVariants
-          .map((variant) => variant.audienceLabel ?? variant.detailLabel ?? 'Variant')
+          .map(
+            (variant) =>
+              variant.audienceLabel ?? variant.detailLabel ?? t('accountSurfaceCard.variant')
+          )
           .join(' • ')}
       >
         {groupedVariantSummaryLabel ? (
@@ -204,6 +207,7 @@ export function AccountCard({
       </div>
       {account.paused && (
         <span className="text-[7px] font-bold uppercase tracking-wide px-1 py-px rounded shrink-0 bg-amber-500/15 text-amber-700 dark:bg-amber-500/25 dark:text-amber-300">
+          {/* TODO i18n: missing key for compact "Paused" */}
           Paused
         </span>
       )}

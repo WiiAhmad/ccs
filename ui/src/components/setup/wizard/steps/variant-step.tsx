@@ -127,9 +127,7 @@ export function VariantStep({
               placeholder={t('setupVariant.modelPlaceholder')}
             />
             {deniedCustomModel && (
-              <p className="text-xs text-destructive">
-                Antigravity denylist: Claude Opus 4.5 and Claude Sonnet 4.5 are deprecated.
-              </p>
+              <p className="text-xs text-destructive">{t('providerEditor.agyDenylist')}</p>
             )}
             <button
               type="button"

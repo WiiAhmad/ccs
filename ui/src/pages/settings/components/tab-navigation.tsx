@@ -26,8 +26,8 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const { t } = useTranslation();
   const tabs = [
     { value: 'websearch' as const, label: t('settingsTabs.web'), icon: Globe },
-    { value: 'image' as const, label: 'Image', icon: ImageIcon },
-    { value: 'channels' as const, label: 'Channels', icon: MessageSquare },
+    { value: 'image' as const, label: t('settingsTabs.image'), icon: ImageIcon },
+    { value: 'channels' as const, label: t('settingsTabs.channels'), icon: MessageSquare },
     { value: 'globalenv' as const, label: t('settingsTabs.env'), icon: Settings2 },
     { value: 'thinking' as const, label: t('settingsTabs.think'), icon: Brain },
     { value: 'proxy' as const, label: t('settingsTabs.proxy'), icon: Server },

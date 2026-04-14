@@ -1,4 +1,5 @@
 import { Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,8 @@ export function CodexFeaturesCard({
   disabledReason,
   onToggle,
 }: CodexFeaturesCardProps) {
+  const { t } = useTranslation();
+
   const knownFeatureNames = new Set(catalog.map((feature) => feature.name));
   const configOnlyFeatures = Object.entries(state)
     .filter(([name]) => !knownFeatureNames.has(name))
@@ -27,9 +30,11 @@ export function CodexFeaturesCard({
 
   return (
     <CodexConfigCardShell
+      // TODO i18n: missing key codex.features
       title="Features"
       badge="features"
       icon={<Sparkles className="h-4 w-4" />}
+      // TODO i18n: missing key codex.featuresDesc
       description="Toggle the supported Codex feature flags CCS can safely manage."
       disabledReason={disabledReason}
     >
@@ -58,7 +63,7 @@ export function CodexFeaturesCard({
                     onClick={() => onToggle(feature.name, null)}
                     disabled={disabled}
                   >
-                    Use default
+                    {t('codex.useDefault')}
                   </Button>
                 ) : null}
                 <Switch
@@ -76,9 +81,11 @@ export function CodexFeaturesCard({
         <div className="space-y-2">
           <div className="space-y-1">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {/* TODO i18n: missing key codex.configOnlyFlags */}
               Existing config-only flags
             </p>
             <p className="text-xs text-muted-foreground">
+              {/* TODO i18n: missing key codex.configOnlyFlagsDesc */}
               These feature keys already exist in your `config.toml`, so CCS can surface them
               without claiming full catalog coverage.
             </p>
@@ -92,17 +99,19 @@ export function CodexFeaturesCard({
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium">{name}</p>
                   <Badge variant="secondary" className="text-[10px]">
+                    {/* TODO i18n: missing key codex.existing */}
                     existing
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
+                  {/* TODO i18n: missing keys codex.nonBooleanForm / codex.discoveredFromFile */}
                   {current === null
                     ? 'Stored in a non-boolean form. Use raw TOML if you need to edit it.'
                     : "Discovered from the current file instead of CCS's built-in catalog."}
                 </p>
               </div>
               {current === null ? (
-                <Badge variant="outline">Raw only</Badge>
+                <Badge variant="outline">{t('codex.rawOnly')}</Badge>
               ) : (
                 <div className="flex items-center gap-2">
                   <Button
@@ -111,7 +120,7 @@ export function CodexFeaturesCard({
                     onClick={() => onToggle(name, null)}
                     disabled={disabled}
                   >
-                    Use default
+                    {t('codex.useDefault')}
                   </Button>
                   <Switch
                     checked={current === true}

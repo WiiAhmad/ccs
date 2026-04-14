@@ -24,9 +24,9 @@ const SCOPE_STYLES: Record<SupportScope, string> = {
 export function SupportEntryCard({ entry }: { entry: CliSupportEntry }) {
   const { t } = useTranslation();
   const pillarLabels: { key: keyof CliSupportEntry['pillars']; label: string }[] = [
-    { key: 'baseUrl', label: 'Base URL' },
-    { key: 'auth', label: 'Auth' },
-    { key: 'model', label: 'Model' },
+    { key: 'baseUrl', label: t('profileDialog.baseUrl') },
+    { key: 'auth', label: t('copilotPage.auth') },
+    { key: 'model', label: t('cliproxyTable.model') },
   ];
 
   return (

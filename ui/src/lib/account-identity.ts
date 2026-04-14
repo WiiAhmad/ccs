@@ -32,13 +32,13 @@ function formatVariantPart(part: string): string {
 
   switch (normalized) {
     case 'team':
-      return 'Team';
+      return 'Team'; // TODO i18n: missing key for account variant team
     case 'free':
-      return 'Free';
+      return 'Free'; // TODO i18n: missing key for account variant free
     case 'plus':
-      return 'Plus';
+      return 'Plus'; // TODO i18n: missing key for account variant plus
     case 'pro':
-      return 'Pro';
+      return 'Pro'; // TODO i18n: missing key for account variant pro
     default:
       return /^[a-f0-9]{8}$/i.test(normalized)
         ? normalized
@@ -98,14 +98,14 @@ function formatWorkspaceLabel(parts: string[]): {
   const workspaceId = parts.find((part) => /^[a-f0-9]{8}$/i.test(part));
   if (workspaceId) {
     return {
-      detailLabel: `Workspace ${workspaceId.toLowerCase()}`,
+      detailLabel: `Workspace ${workspaceId.toLowerCase()}`, // TODO i18n: missing key for workspace label
       compactDetailLabel: workspaceId.toLowerCase(),
     };
   }
 
   const extraLabel = parts.map(formatVariantPart).filter(Boolean).join(' · ');
   return {
-    detailLabel: extraLabel || 'Team',
+    detailLabel: extraLabel || 'Team', // TODO i18n: missing key for team fallback
     compactDetailLabel: extraLabel || 'Team',
   };
 }
@@ -155,7 +155,7 @@ export function getAccountIdentityPresentation(
   const suffix = parts[parts.length - 1]?.toLowerCase();
   if (suffix && BUSINESS_PLAN_PARTS.has(suffix)) {
     const workspace = formatWorkspaceLabel(parts.slice(0, -1));
-    const inlineLabel = ['Business', workspace.detailLabel].filter(Boolean).join(' · ');
+    const inlineLabel = ['Business', workspace.detailLabel].filter(Boolean).join(' · '); // TODO i18n: missing keys for Business/Personal audience labels
     return {
       email: resolvedEmail,
       audience: 'business',
@@ -171,7 +171,7 @@ export function getAccountIdentityPresentation(
       .filter(Boolean)
       .join(' · ');
     const detailLabel = detailParts || formatVariantPart(suffix);
-    const inlineLabel = ['Personal', detailLabel].filter(Boolean).join(' · ');
+    const inlineLabel = ['Personal', detailLabel].filter(Boolean).join(' · '); // TODO i18n: missing key for Personal
     return {
       email: resolvedEmail,
       audience: 'personal',

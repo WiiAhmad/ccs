@@ -182,7 +182,9 @@ function SettingsPageInner() {
               <div className="flex items-center gap-3">
                 <FileCode className="w-5 h-5 text-primary" />
                 <div>
+                  {/* TODO i18n: missing key for "config.yaml" header */}
                   <h2 className="font-semibold">config.yaml</h2>
+                  {/* TODO i18n: missing key for "~/.ccs/config.yaml" path */}
                   <p className="text-sm text-muted-foreground">~/.ccs/config.yaml</p>
                 </div>
               </div>

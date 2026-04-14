@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Loader2, PlugZap, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -67,6 +68,7 @@ function McpServerEditor({
   onSave,
   onDelete,
 }: McpServerEditorProps) {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState<CodexMcpServerEntry>(initialDraft);
 
   return (
@@ -92,8 +94,8 @@ function McpServerEditor({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="stdio">stdio</SelectItem>
-            <SelectItem value="streamable-http">streamable-http</SelectItem>
+            <SelectItem value="stdio">{t('codex.stdio')}</SelectItem>
+            <SelectItem value="streamable-http">{t('codex.streamableHttp')}</SelectItem>
           </SelectContent>
         </Select>
         {draft.transport === 'stdio' ? (
@@ -136,6 +138,7 @@ function McpServerEditor({
               startupTimeoutSec: event.target.value ? Number(event.target.value) : null,
             }))
           }
+          // TODO i18n: missing key codex.startupTimeoutSec
           placeholder="Startup timeout (sec)"
           disabled={disabled}
         />
@@ -149,6 +152,7 @@ function McpServerEditor({
               toolTimeoutSec: event.target.value ? Number(event.target.value) : null,
             }))
           }
+          // TODO i18n: missing key codex.toolTimeoutSec
           placeholder="Tool timeout (sec)"
           disabled={disabled}
         />
@@ -172,6 +176,7 @@ function McpServerEditor({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+          {/* TODO i18n: missing key codex.enabled */}
           Enabled
           <Switch
             checked={draft.enabled}
@@ -180,6 +185,7 @@ function McpServerEditor({
           />
         </label>
         <label className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+          {/* TODO i18n: missing key codex.required */}
           Required
           <Switch
             checked={draft.required}
@@ -192,6 +198,7 @@ function McpServerEditor({
       <div className="flex justify-between gap-2">
         <Button variant="outline" onClick={onDelete} disabled={disabled || saving || !canDelete}>
           <Trash2 className="mr-2 h-4 w-4" />
+          {/* TODO i18n: missing key common.delete */}
           Delete
         </Button>
         <Button
@@ -212,6 +219,7 @@ function McpServerEditor({
           disabled={disabled || saving || draft.name.trim().length === 0}
         >
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          {/* TODO i18n: missing key codex.saveMcpServer */}
           Save MCP server
         </Button>
       </div>
@@ -227,6 +235,8 @@ export function CodexMcpServersCard({
   onSave,
   onDelete,
 }: CodexMcpServersCardProps) {
+  const { t } = useTranslation();
+
   const [selectedName, setSelectedName] = useState('new');
   const selectedEntry = useMemo(
     () => entries.find((entry) => entry.name === selectedName) ?? null,
@@ -237,18 +247,21 @@ export function CodexMcpServersCard({
 
   return (
     <CodexConfigCardShell
+      // TODO i18n: missing key codex.mcpServers
       title="MCP servers"
       badge="mcp_servers"
       icon={<PlugZap className="h-4 w-4" />}
+      // TODO i18n: missing key codex.mcpServersDesc
       description="Manage the safe MCP transport fields. Keep auth headers and bearer tokens in raw TOML."
       disabledReason={disabledReason}
     >
       <Select value={selectedName} onValueChange={setSelectedName} disabled={disabled}>
         <SelectTrigger>
+          {/* TODO i18n: missing key codex.selectMcpServer */}
           <SelectValue placeholder="Select MCP server" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="new">Create new MCP server</SelectItem>
+          <SelectItem value="new">{t('codex.createNewMcpServer')}</SelectItem>
           {entries.map((entry) => (
             <SelectItem key={entry.name} value={entry.name}>
               {entry.name}

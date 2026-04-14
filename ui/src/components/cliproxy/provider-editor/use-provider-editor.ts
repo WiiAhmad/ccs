@@ -6,6 +6,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import i18n from '@/lib/i18n';
 import type { SettingsResponse, UseProviderEditorReturn } from './types';
 import type { ProviderCatalog } from '../provider-model-selector';
 import {
@@ -177,11 +178,11 @@ export function useProviderEditor(
       setRawJsonEdits(null);
       // Show warning if fields missing (runtime uses defaults)
       if (responseData?.warning) {
-        toast.success('Settings saved', {
+        toast.success(i18n.t('settings.saved'), {
           description: responseData.warning,
         });
       } else {
-        toast.success('Settings saved');
+        toast.success(i18n.t('settings.saved'));
       }
     },
     onError: (error: Error) => {

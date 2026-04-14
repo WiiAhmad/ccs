@@ -9,6 +9,7 @@ import { getAccountIdentityPresentation } from '@/lib/account-identity';
 import { cn } from '@/lib/utils';
 import { PRIVACY_BLUR_CLASS } from '@/contexts/privacy-context';
 import type { AccountStepProps } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export function AccountStep({
   accounts,
@@ -17,11 +18,12 @@ export function AccountStep({
   onAddNew,
   onBack,
 }: AccountStepProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       {/* Existing accounts header */}
       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        Select an account ({accounts.length})
+        {t('setupWizard.accountStep.selectAccount', { count: accounts.length })}
       </div>
 
       {/* Scrollable account list with max-height for many accounts */}
@@ -63,7 +65,9 @@ export function AccountStep({
                       </Badge>
                     )}
                     {acc.isDefault && (
-                      <span className="text-xs text-muted-foreground">Default account</span>
+                      <span className="text-xs text-muted-foreground">
+                        {t('setupWizard.accountStep.defaultAccount')}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -80,7 +84,9 @@ export function AccountStep({
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or</span>
+          <span className="bg-background px-2 text-muted-foreground">
+            {t('setupWizard.accountStep.or')}
+          </span>
         </div>
       </div>
 
@@ -94,15 +100,19 @@ export function AccountStep({
           <ExternalLink className="w-4 h-4 text-primary" />
         </div>
         <div>
-          <div className="font-medium text-primary">Add new account</div>
-          <div className="text-xs text-muted-foreground">Authenticate with a different account</div>
+          <div className="font-medium text-primary">
+            {t('setupWizard.accountStep.addNewAccount')}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {t('setupWizard.accountStep.addNewAccountDesc')}
+          </div>
         </div>
       </button>
 
       <div className="flex items-center justify-between pt-2">
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          {t('setupWizard.accountStep.back')}
         </Button>
       </div>
     </div>

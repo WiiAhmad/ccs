@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useOfficialChannelsConfig } from '../hooks/use-official-channels-config';
 import { useRawConfig } from '../hooks';
 import type { OfficialChannelId } from '../types';
@@ -84,6 +85,7 @@ function getSelectedChannelLabel(
 }
 
 export default function ChannelsSection() {
+  const { t } = useTranslation();
   const {
     config,
     status,
@@ -148,7 +150,7 @@ export default function ChannelsSection() {
       <div className="flex flex-1 items-center justify-center">
         <div className="flex items-center gap-3 text-muted-foreground">
           <RefreshCw className="h-5 w-5 animate-spin" />
-          <span>Loading</span>
+          <span>{t('settings.loading')}</span>
         </div>
       </div>
     );
@@ -182,11 +184,13 @@ export default function ChannelsSection() {
           <div className="flex items-start gap-3">
             <MessageSquare className="h-5 w-5 text-primary" />
             <div className="space-y-1">
-              <p className="font-medium">Official Channels</p>
+              <p className="font-medium">{t('settingsPage.channelsSection.title')}</p>
+              {/* TODO i18n: missing key for channels description paragraphs */}
               <p className="text-sm text-muted-foreground">
                 Configure official Claude channels here, then run <code>ccs</code> normally on a
                 supported native Claude session.
               </p>
+              {/* TODO i18n: missing key for channels storage description */}
               <p className="text-sm text-muted-foreground">
                 CCS stores only channel selection in <code>config.yaml</code>. Claude keeps the
                 machine-level channel state under <code>~/.claude/channels/</code>.
@@ -208,10 +212,12 @@ export default function ChannelsSection() {
                   <p className="text-sm opacity-90">{status.summary.nextStep}</p>
                 </div>
                 <div className="min-w-[220px] rounded-lg border border-current/10 bg-background/60 p-3 text-sm text-foreground">
+                  {/* TODO i18n: missing key for "Machine checks" */}
                   <p className="font-medium">Machine checks</p>
                   <div className="mt-2 space-y-1 text-muted-foreground">
                     <div className="flex items-center justify-between gap-4">
                       <span>Bun</span>
+                      {/* TODO i18n: missing key for "Installed"/"Missing" */}
                       <span>{status.bunInstalled ? 'Installed' : 'Missing'}</span>
                     </div>
                     <div className="flex items-center justify-between gap-4">
@@ -224,6 +230,7 @@ export default function ChannelsSection() {
                     </div>
                     <div className="flex items-center justify-between gap-4">
                       <span>Claude auth</span>
+                      {/* TODO i18n: missing key for "Unknown" */}
                       <span>{status.auth.authMethod ?? 'Unknown'}</span>
                     </div>
                   </div>
@@ -241,6 +248,7 @@ export default function ChannelsSection() {
 
           {status && (
             <div className="rounded-lg border bg-muted/20 p-4">
+              {/* TODO i18n: missing key for "Fastest path" and step descriptions */}
               <p className="font-medium">Fastest path</p>
               <div className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <p>1. Turn on the channels you want below.</p>
@@ -252,6 +260,7 @@ export default function ChannelsSection() {
                 <p>{status.supportMessage}</p>
               </div>
               <details className="mt-3 rounded-lg border bg-background p-4">
+                {/* TODO i18n: missing key for "Advanced notes and scope" */}
                 <summary className="cursor-pointer text-sm font-medium">
                   Advanced notes and scope
                 </summary>
@@ -267,6 +276,7 @@ export default function ChannelsSection() {
             <div className="rounded-lg border bg-background p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1">
+                  {/* TODO i18n: missing key for "If you run ccs now" */}
                   <p className="font-medium">
                     If you run <code>ccs</code> now
                   </p>
@@ -278,10 +288,12 @@ export default function ChannelsSection() {
               </div>
               <div className="mt-3 space-y-2">
                 <div className="rounded-md bg-muted px-3 py-2 font-mono text-sm">
+                  {/* TODO i18n: missing key for "You type:" */}
                   <span className="text-muted-foreground">You type:</span>{' '}
                   {status.launchPreview.command}
                 </div>
                 <div className="rounded-md bg-muted px-3 py-2 font-mono text-sm break-all">
+                  {/* TODO i18n: missing key for "CCS adds:" */}
                   <span className="text-muted-foreground">CCS adds:</span>{' '}
                   {status.launchPreview.appendedArgs.length > 0
                     ? status.launchPreview.appendedArgs.join(' ')
@@ -391,6 +403,7 @@ export default function ChannelsSection() {
                           disabled={saving || !tokenDraft.trim()}
                         >
                           <Save className="mr-2 h-4 w-4" />
+                          {/* TODO i18n: missing key for "Save Token" */}
                           Save Token
                         </Button>
                         <Button
@@ -399,6 +412,7 @@ export default function ChannelsSection() {
                           disabled={saving || !channel.tokenConfigured}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
+                          {/* TODO i18n: missing key for "Clear Saved Token" */}
                           Clear Saved Token
                         </Button>
                       </div>
@@ -406,6 +420,7 @@ export default function ChannelsSection() {
                   )}
 
                   <details className="rounded-lg border bg-background p-4">
+                    {/* TODO i18n: missing key for "Claude-side setup commands" */}
                     <summary className="cursor-pointer text-sm font-medium">
                       Claude-side setup commands
                     </summary>
@@ -426,6 +441,7 @@ export default function ChannelsSection() {
           </div>
 
           <Alert>
+            {/* TODO i18n: missing key for channels injection disclaimer */}
             <AlertDescription>
               CCS injects <code>--channels</code> only for the current Claude session. Telegram,
               Discord, and iMessage stop receiving messages when that Claude session exits.
@@ -437,7 +453,10 @@ export default function ChannelsSection() {
               <div className="flex gap-3">
                 <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                 <div>
-                  <Label className="text-sm font-medium">Skip permission prompts on launch</Label>
+                  <Label className="text-sm font-medium">
+                    {t('profileEditorSections.skipPermissionPrompts')}
+                  </Label>
+                  {/* TODO i18n: missing key for skip permission description */}
                   <p className="mt-1 text-sm text-muted-foreground">
                     Optional advanced behavior. CCS adds <code>--dangerously-skip-permissions</code>{' '}
                     only when at least one selected channel is being auto-enabled and you did not
@@ -466,7 +485,7 @@ export default function ChannelsSection() {
           <div className="flex justify-end">
             <Button variant="outline" onClick={() => void refreshAll()} disabled={saving}>
               <RefreshCw className={`mr-2 h-4 w-4 ${saving ? 'animate-spin' : ''}`} />
-              Refresh
+              {t('settings.refresh')}
             </Button>
           </div>
         </div>

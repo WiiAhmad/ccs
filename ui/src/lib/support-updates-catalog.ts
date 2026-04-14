@@ -48,10 +48,10 @@ export interface CliSupportEntry {
 }
 
 export const SUPPORT_SCOPE_LABELS: Record<SupportScope, string> = {
-  target: 'Target CLI',
-  cliproxy: 'CLIProxy Provider',
-  'api-profiles': 'API Profile',
-  websearch: 'WebSearch',
+  target: 'Target CLI', // TODO i18n: missing key for support scope target
+  cliproxy: 'CLIProxy Provider', // TODO i18n: missing key for support scope cliproxy
+  'api-profiles': 'API Profile', // TODO i18n: missing key for support scope api-profiles
+  websearch: 'WebSearch', // TODO i18n: missing key for support scope websearch
 };
 
 export const SUPPORT_NOTICES: SupportNotice[] = [

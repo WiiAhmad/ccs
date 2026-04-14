@@ -26,6 +26,7 @@ import {
   Sparkles,
   Trash2,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { api, type ImageAnalysisDashboardData } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { useRawConfig } from '../../hooks';
@@ -115,6 +116,7 @@ function backendStateClass(state: ImageAnalysisDashboardData['backends'][number]
   }
 }
 
+// TODO i18n: missing keys for currentTargetModeLabel values
 function currentTargetModeLabel(
   mode: ImageAnalysisDashboardData['profiles'][number]['currentTargetMode']
 ): string {
@@ -155,6 +157,7 @@ function currentTargetModeClass(
   }
 }
 
+// TODO i18n: missing keys for backendStateLabel values
 function backendStateLabel(state: ImageBackend['state']): string {
   switch (state) {
     case 'starts_on_launch':
@@ -170,6 +173,7 @@ function backendStateLabel(state: ImageBackend['state']): string {
   }
 }
 
+// TODO i18n: missing keys for backendStatusNote values
 function backendStatusNote(backend: ImageBackend | undefined): string | null {
   if (!backend) {
     return 'No model configured.';
@@ -189,6 +193,7 @@ function backendStatusNote(backend: ImageBackend | undefined): string | null {
   }
 }
 
+// TODO i18n: missing keys for routeSourceLabel values
 function routeSourceLabel(source: ImageProfile['resolutionSource']): string {
   switch (source) {
     case 'profile-backend':
@@ -254,6 +259,7 @@ function getCoverageRowClass(index: number, profile: ImageProfile): string {
   return index % 2 === 0 ? 'bg-background/75' : 'bg-muted/18';
 }
 
+// TODO i18n: missing keys for summaryCompactDetail format strings
 function summaryCompactDetail(summary: ImageAnalysisDashboardData['summary']): string {
   const parts = [`${summary.activeProfileCount} routed`, `${summary.nativeProfileCount} native`];
 
@@ -361,6 +367,7 @@ function ImageSectionPanel({
 }
 
 export default function ImageAnalysisSection() {
+  const { t } = useTranslation();
   const { fetchRawConfig } = useRawConfig();
   const [data, setData] = useState<ImageAnalysisDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -530,7 +537,7 @@ export default function ImageAnalysisSection() {
         });
         setData(payload);
         hydrateDraft(payload);
-        setSuccess('Image settings saved.');
+        setSuccess(t('commonToast.settingsSaved'));
         await fetchRawConfig();
         return true;
       } catch (err) {
@@ -549,6 +556,7 @@ export default function ImageAnalysisSection() {
       hydrateDraft,
       mappingDrafts,
       providerModels,
+      t,
       timeout,
     ]
   );
@@ -638,7 +646,7 @@ export default function ImageAnalysisSection() {
       <div className="flex-1 flex items-center justify-center">
         <div className="flex items-center gap-3 text-muted-foreground">
           <RefreshCw className="w-5 h-5 animate-spin" />
-          <span>Loading image settings...</span>
+          <span>{t('settingsPage.imageAnalysisSection.loading')}</span>
         </div>
       </div>
     );
@@ -649,12 +657,14 @@ export default function ImageAnalysisSection() {
       <div className="p-5">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error ?? 'Failed to load image settings.'}</AlertDescription>
+          <AlertDescription>
+            {error ?? t('settingsPage.imageAnalysisSection.description')}
+          </AlertDescription>
         </Alert>
         <div className="mt-4">
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <RefreshCw className="mr-1 h-4 w-4" />
-            Retry
+            {t('sharedPage.retry')}
           </Button>
         </div>
       </div>
@@ -702,7 +712,9 @@ export default function ImageAnalysisSection() {
                     <div className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-primary/20 bg-primary/8 text-primary">
                       <ImageIcon className="h-4 w-4" />
                     </div>
-                    <p className="text-sm font-semibold tracking-tight">Image</p>
+                    <p className="text-sm font-semibold tracking-tight">
+                      {t('settingsPage.imageAnalysisSection.title')}
+                    </p>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                     <Badge className={cn('border', summaryToneClass(data.summary.state))}>
@@ -750,7 +762,7 @@ export default function ImageAnalysisSection() {
             tone="amber"
             eyebrow="Control deck"
             title="Core setup"
-            description="Global toggle, timeout, and fallback."
+            description={t('settingsPage.imageAnalysisSection.description')}
             icon={<SlidersHorizontal className="h-4 w-4" />}
             meta={
               <Badge variant="outline" className="border-amber-500/25 bg-amber-500/10 text-[10px]">
@@ -837,11 +849,15 @@ export default function ImageAnalysisSection() {
                     disabled={saving}
                   >
                     <SelectTrigger className="h-10 border-amber-500/15 bg-background/90">
-                      <SelectValue placeholder="Choose backend" />
+                      <SelectValue
+                        placeholder={t('settingsPage.thinkingSection.configureModelFirst')}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {configuredBackendIds.length === 0 ? (
-                        <SelectItem value={NO_BACKEND}>Configure a model first</SelectItem>
+                        <SelectItem value={NO_BACKEND}>
+                          {t('settingsPage.thinkingSection.configureModelFirst')}
+                        </SelectItem>
                       ) : (
                         configuredBackendIds.map((backendId) => (
                           <SelectItem key={backendId} value={backendId}>
@@ -954,7 +970,7 @@ export default function ImageAnalysisSection() {
                       <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                         <Input
                           className="h-10 flex-1 border-cyan-500/15 bg-background/88 text-base"
-                          placeholder="Set model"
+                          placeholder="Set model" /* TODO i18n: missing key */
                           value={currentModel}
                           disabled={saving}
                           onChange={(event) =>
@@ -983,6 +999,7 @@ export default function ImageAnalysisSection() {
                               void commitProviderModel(backendId, '');
                             }}
                           >
+                            {/* TODO i18n: missing key for "Clear" */}
                             Clear
                           </Button>
                         )}
@@ -1084,6 +1101,7 @@ export default function ImageAnalysisSection() {
                   ) : (
                     <ChevronDown className="mr-1 h-4 w-4" />
                   )}
+                  {/* TODO i18n: missing key for "Hide"/"Show" */}
                   {showProfileRouting ? 'Hide' : 'Show'}
                 </Button>
                 {showProfileRouting && (
@@ -1104,6 +1122,7 @@ export default function ImageAnalysisSection() {
                     disabled={configuredBackendIds.length === 0 || saving}
                   >
                     <Plus className="mr-1 h-4 w-4" />
+                    {/* TODO i18n: missing key for "Add mapping" */}
                     Add mapping
                   </Button>
                 )}
@@ -1157,6 +1176,7 @@ export default function ImageAnalysisSection() {
                             }}
                           >
                             <Trash2 className="mr-1 h-4 w-4" />
+                            {/* TODO i18n: missing key for "Remove" */}
                             Remove
                           </Button>
                         </div>
@@ -1166,7 +1186,7 @@ export default function ImageAnalysisSection() {
                             value={row.profileName}
                             list="image-profile-suggestions"
                             disabled={saving}
-                            placeholder="Profile or variant name"
+                            placeholder="Profile or variant name" /* TODO i18n: missing key */
                             className="h-10 border-slate-400/15 bg-background/88 text-base"
                             onChange={(event) => {
                               updateMappingRow(row.id, { profileName: event.target.value });
@@ -1198,11 +1218,15 @@ export default function ImageAnalysisSection() {
                             }}
                           >
                             <SelectTrigger className="h-10 border-slate-400/15 bg-background/88">
-                              <SelectValue placeholder="Choose backend" />
+                              <SelectValue
+                                placeholder={t('settingsPage.thinkingSection.configureModelFirst')}
+                              />
                             </SelectTrigger>
                             <SelectContent>
                               {configuredBackendIds.length === 0 ? (
-                                <SelectItem value={NO_BACKEND}>Configure a model first</SelectItem>
+                                <SelectItem value={NO_BACKEND}>
+                                  {t('settingsPage.thinkingSection.configureModelFirst')}
+                                </SelectItem>
                               ) : (
                                 configuredBackendIds.map((backendId) => (
                                   <SelectItem key={backendId} value={backendId}>

@@ -8,6 +8,7 @@ import {
   TerminalSquare,
   XCircle,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { QuickCommands } from '@/components/shared';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,6 +60,8 @@ interface CodexOverviewTabProps {
 }
 
 export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
+  const { t } = useTranslation();
+
   const inspectProfileCommand = diagnostics.config.activeProfile
     ? `codex --profile ${diagnostics.config.activeProfile}`
     : 'codex';
@@ -71,25 +74,29 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Info className="h-4 w-4" />
+              {/* TODO i18n: missing key codex.howCodexWorks */}
               How Codex works in CCS
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
             <ul className="ml-4 list-disc space-y-1.5 [&>li]:pl-1">
-              <li>Codex is a first-class, runtime-only target in CCS v1.</li>
+              <li>{t('codex.nativeDesc')}</li>
               <li>
+                {/* TODO i18n: missing key codex.nativeConfigLabel */}
                 <strong>Native config:</strong> <code>ccs-codex</code> and <code>ccsx</code> launch
                 native Codex using your saved defaults.
               </li>
               <li>
+                {/* TODO i18n: missing key codex.transientOverrides */}
                 <strong>Transient overrides:</strong> <code>ccsxp</code> (or{' '}
                 <code>ccs codex --target codex</code>) uses the CCS provider shortcut.
               </li>
               <li>
+                {/* TODO i18n: missing key codex.cliproxyDefault */}
                 <strong>CLIProxy default:</strong> To make plain <code>codex</code> use CLIProxy,
                 set <code>model_provider = "cliproxy"</code> and add the recipe below.
               </li>
-              <li>API profiles continue to default to Claude or Droid.</li>
+              <li>{t('codex.apiProfilesDefault')}</li>
             </ul>
           </CardContent>
         </Card>
@@ -98,16 +105,19 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <TerminalSquare className="h-4 w-4" />
+              {/* TODO i18n: missing key codex.runtimeInstall */}
               Runtime install
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Status</span>
+              <span className="text-sm text-muted-foreground">{t('codex.status')}</span>
               <Badge variant={diagnostics.binary.installed ? 'default' : 'secondary'}>
+                {/* TODO i18n: missing keys codex.detected / codex.notFound */}
                 {diagnostics.binary.installed ? 'Detected' : 'Not found'}
               </Badge>
             </div>
+            {/* TODO i18n: missing keys codex.detectionSource / codex.binaryPath / codex.installDirectory / codex.version / codex.nativeAliases / codex.ccsProviderShortcut / codex.configOverrideSupport */}
             <DetailRow label="Detection source" value={diagnostics.binary.source} mono />
             <DetailRow label="Binary path" value={diagnostics.binary.path || 'Not found'} mono />
             <DetailRow
@@ -121,6 +131,7 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
             <div className="flex items-center justify-between rounded-md border px-3 py-2">
               <span className="text-sm text-muted-foreground">--config override support</span>
               <Badge variant={diagnostics.binary.supportsConfigOverrides ? 'default' : 'secondary'}>
+                {/* TODO i18n: missing keys codex.available / codex.missing */}
                 {diagnostics.binary.supportsConfigOverrides ? 'Available' : 'Missing'}
               </Badge>
             </div>
@@ -131,6 +142,7 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Route className="h-4 w-4" />
+              {/* TODO i18n: missing key codex.cliproxyNativeCodex */}
               CLIProxy-backed native Codex
             </CardTitle>
           </CardHeader>
@@ -139,34 +151,39 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
               <>
                 <div className="space-y-1.5">
                   <p>
-                    <strong>Two supported paths:</strong>
+                    <strong>{t('codex.twoSupportedPaths')}</strong>
                   </p>
                   <ul className="ml-4 list-disc space-y-1 [&>li]:pl-1">
                     <li>
+                      {/* TODO i18n: missing key codex.builtInCcsxp */}
                       <strong>Built-in:</strong> Use <code>ccsxp</code> for the CCS provider
                       shortcut.
                     </li>
                     <li>
+                      {/* TODO i18n: missing key codex.nativeRecipe */}
                       <strong>Native:</strong> Configure the recipe below to use CLIProxy directly
                       with <code>codex</code>.
                     </li>
                   </ul>
                 </div>
                 <div className="rounded-md border bg-muted/20 p-3">
-                  <p className="font-medium text-foreground">Saved native Codex recipe</p>
+                  <p className="font-medium text-foreground">{t('codex.codexNativeRecipe')}</p>
                   <pre className="mt-2 overflow-x-auto rounded-md bg-background p-3 text-xs text-foreground">
                     {CLIPROXY_NATIVE_CODEX_RECIPE}
                   </pre>
                 </div>
                 <ol className="ml-4 list-decimal space-y-1.5 [&>li]:pl-1">
                   <li>
+                    {/* TODO i18n: missing key codex.saveProviderNamedCliproxy */}
                     Save a provider named <code>cliproxy</code> with the base URL and env key above.
                   </li>
                   <li>
+                    {/* TODO i18n: missing key codex.inTopLevelSetDefault */}
                     In <strong>Top-level settings</strong>, set <strong>Default provider</strong> to{' '}
                     <code>cliproxy</code>.
                   </li>
                   <li>
+                    {/* TODO i18n: missing key codex.exportCliproxyApiKey */}
                     Export <code>CLIPROXY_API_KEY</code> in your shell before launching native
                     Codex.
                   </li>
@@ -174,6 +191,7 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
               </>
             ) : (
               <p>
+                {/* TODO i18n: missing key codex.noConfigOverrides */}
                 This Codex build can still use the native path, but CCS-backed Codex routing via{' '}
                 <code>ccsxp</code> or <code>ccs codex --target codex</code> stays unavailable until
                 the detected Codex binary exposes <code>--config</code> overrides.
@@ -186,30 +204,34 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Folder className="h-4 w-4" />
+              {/* TODO i18n: missing key codex.configFile */}
               Config file
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="rounded-md border p-3 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-medium text-sm">User config</span>
+                <span className="font-medium text-sm">{t('codex.userConfig')}</span>
                 {diagnostics.file.exists ? (
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                 ) : (
                   <XCircle className="h-4 w-4 text-muted-foreground" />
                 )}
               </div>
+              {/* TODO i18n: missing keys codex.path / codex.resolved / codex.size / codex.lastModified */}
               <DetailRow label="Path" value={diagnostics.file.path} mono />
               <DetailRow label="Resolved" value={diagnostics.file.resolvedPath} mono />
               <DetailRow label="Size" value={formatBytes(diagnostics.file.sizeBytes)} />
               <DetailRow label="Last modified" value={formatTimestamp(diagnostics.file.mtimeMs)} />
               {diagnostics.file.parseError && (
                 <p className="text-xs text-amber-600">
+                  {/* TODO i18n: missing key codex.tomlWarning */}
                   TOML warning: {diagnostics.file.parseError}
                 </p>
               )}
               {diagnostics.file.readError && (
                 <p className="text-xs text-destructive">
+                  {/* TODO i18n: missing key codex.readWarning */}
                   Read warning: {diagnostics.file.readError}
                 </p>
               )}
@@ -221,34 +243,46 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <ShieldCheck className="h-4 w-4" />
+              {/* TODO i18n: missing key codex.currentUserLayerSummary */}
               Current user-layer summary
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <DetailRow label="Model" value={diagnostics.config.model || 'Not set'} mono />
+            {/* TODO i18n: missing key codex.notSet */}
             <DetailRow
-              label="Model provider"
+              label={t('codex.model')}
+              value={diagnostics.config.model || 'Not set'}
+              mono
+            />
+            <DetailRow
+              label={t('codex.defaultProvider')}
               value={diagnostics.config.modelProvider || 'Not set'}
               mono
             />
             <DetailRow
+              // TODO i18n: missing key codex.activeProfile
               label="Active profile"
               value={diagnostics.config.activeProfile || 'Not set'}
               mono
             />
             <DetailRow
-              label="Approval policy"
+              label={t('codex.approvalPolicy')}
               value={diagnostics.config.approvalPolicy || 'Not set'}
               mono
             />
             <DetailRow
-              label="Sandbox mode"
+              label={t('codex.sandboxMode')}
               value={diagnostics.config.sandboxMode || 'Not set'}
               mono
             />
-            <DetailRow label="Web search" value={diagnostics.config.webSearch || 'Not set'} mono />
+            <DetailRow
+              label={t('codex.webSearch')}
+              value={diagnostics.config.webSearch || 'Not set'}
+              mono
+            />
             <Separator />
             <div className="grid grid-cols-2 gap-2 text-xs">
+              {/* TODO i18n: missing keys codex.providersCount / codex.profilesCount / codex.enabledFeaturesCount / codex.mcpServersCount */}
               <Badge variant="outline" className="justify-center">
                 providers: {diagnostics.config.modelProviderCount}
               </Badge>
@@ -265,6 +299,7 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
             {diagnostics.config.topLevelKeys.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {/* TODO i18n: missing key codex.userLayerKeysPresent */}
                   User-layer keys present
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -282,28 +317,31 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
         <QuickCommands
           snippets={[
             {
+              // TODO i18n: missing key codex.nativeShortAlias
               label: 'Native short alias',
               command: 'ccsx',
               description: 'Launch the short native Codex runtime alias.',
             },
             {
+              // TODO i18n: missing key codex.ccsCodexShortcut
               label: 'CCS Codex shortcut',
               command: 'ccsxp "your prompt"',
               description: supportsManagedRouting
-                ? 'Run the built-in CCS Codex provider on native Codex.'
+                ? t('codex.runBuiltInCodex')
                 : 'Requires a Codex build that exposes --config overrides.',
             },
             {
+              // TODO i18n: missing key codex.explicitProviderRoute
               label: 'Explicit provider route',
               command: 'ccs codex --target codex "your prompt"',
               description: supportsManagedRouting
-                ? 'Use the explicit built-in Codex provider route.'
+                ? t('codex.runBuiltInCodexExplicit')
                 : 'Requires a Codex build that exposes --config overrides.',
             },
             {
               label: diagnostics.config.activeProfile
                 ? 'Inspect active profile'
-                : 'Open native Codex',
+                : t('codex.openNativeCodex'),
               command: inspectProfileCommand,
               description: diagnostics.config.activeProfile
                 ? 'Inspect the active named profile directly in native Codex.'
@@ -316,12 +354,13 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Route className="h-4 w-4" />
+              {/* TODO i18n: missing key codex.runtimeVsProvider */}
               Runtime vs provider
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">
             <div className="flex flex-col rounded-md border p-3 text-sm">
-              <p className="font-medium text-foreground">Native Codex runtime</p>
+              <p className="font-medium text-foreground">{t('codex.nativeCodexRuntime')}</p>
               <ul className="mt-2 flex-grow list-disc space-y-1.5 pl-4 text-muted-foreground [&>li]:pl-1">
                 <li>
                   <code>ccs-codex</code>
@@ -334,11 +373,12 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
                 </li>
               </ul>
               <Badge variant="secondary" className="mt-4 w-fit justify-center font-normal">
+                {/* TODO i18n: missing key codex.honorsSavedNativeConfig */}
                 Honors saved native user config
               </Badge>
             </div>
             <div className="flex flex-col rounded-md border p-3 text-sm">
-              <p className="font-medium text-foreground">CCS Codex provider / bridge</p>
+              <p className="font-medium text-foreground">{t('codex.ccsCodexProvider')}</p>
               {supportsManagedRouting ? (
                 <>
                   <ul className="mt-2 flex-grow list-disc space-y-1.5 pl-4 text-muted-foreground [&>li]:pl-1">
@@ -350,11 +390,13 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
                     </li>
                   </ul>
                   <Badge variant="secondary" className="mt-4 w-fit justify-center font-normal">
+                    {/* TODO i18n: missing key codex.usesTransientOverrides */}
                     Uses transient overrides
                   </Badge>
                 </>
               ) : (
                 <p className="mt-2 text-muted-foreground">
+                  {/* TODO i18n: missing key codex.unavailableNoConfig */}
                   Unavailable (Codex build lacks <code>--config</code> support).
                 </p>
               )}
@@ -364,15 +406,15 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Supported flows</CardTitle>
+            <CardTitle className="text-base">{t('codex.supportedFlows')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Flow</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Notes</TableHead>
+                  <TableHead>{t('codex.flow')}</TableHead>
+                  <TableHead>{t('codex.status')}</TableHead>
+                  <TableHead>{t('codex.notes')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -381,6 +423,7 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
                     <TableCell className="font-mono text-xs">{entry.label}</TableCell>
                     <TableCell>
                       <Badge variant={entry.supported ? 'default' : 'secondary'}>
+                        {/* TODO i18n: missing keys common.yes / common.no */}
                         {entry.supported ? 'Yes' : 'No'}
                       </Badge>
                     </TableCell>
@@ -397,6 +440,7 @@ export function CodexOverviewTab({ diagnostics }: CodexOverviewTabProps) {
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
+                {/* TODO i18n: missing key codex.warnings */}
                 Warnings
               </CardTitle>
             </CardHeader>

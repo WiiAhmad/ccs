@@ -22,6 +22,7 @@ import {
   type UnifiedQuotaResult,
 } from '@/lib/utils';
 import type { ProviderEntitlementEvidence } from '@/lib/api-client';
+import { useTranslation } from 'react-i18next';
 
 interface QuotaTooltipContentProps {
   quota: UnifiedQuotaResult | null | undefined;
@@ -57,22 +58,26 @@ function formatAbsoluteResetTime(resetTime: string | null): string | null {
   }
 }
 
-function getClaudeWindowDisplayLabel(rateLimitType: string, fallback: string): string {
+function getClaudeWindowDisplayLabel(
+  rateLimitType: string,
+  fallback: string,
+  t: (key: string) => string
+): string {
   switch (rateLimitType) {
     case 'five_hour':
-      return '5h usage limit';
+      return t('quotaTooltip.fiveHourLimit');
     case 'seven_day':
-      return 'Weekly usage limit';
+      return t('quotaTooltip.weeklyLimit');
     case 'seven_day_opus':
-      return 'Weekly usage (Opus)';
+      return t('quotaTooltip.weeklyOpus');
     case 'seven_day_sonnet':
-      return 'Weekly usage (Sonnet)';
+      return t('quotaTooltip.weeklySonnet');
     case 'seven_day_oauth_apps':
-      return 'Weekly usage (OAuth apps)';
+      return t('quotaTooltip.weeklyOAuthApps');
     case 'seven_day_cowork':
-      return 'Weekly usage (Cowork)';
+      return t('quotaTooltip.weeklyCowork');
     case 'overage':
-      return 'Extra usage';
+      return t('quotaTooltip.extraUsage');
     default:
       return fallback;
   }
@@ -118,38 +123,42 @@ function formatGeminiBucketModels(modelIds: string[] | undefined): string | null
 
 function formatGeminiRemainingAmount(
   remainingAmount: number | null | undefined,
-  tokenType: string | null | undefined
+  tokenType: string | null | undefined,
+  t: (key: string, options?: Record<string, unknown>) => string
 ): string | null {
   if (remainingAmount === null || remainingAmount === undefined) return null;
 
   const formattedAmount = remainingAmount.toLocaleString();
   switch (tokenType?.trim().toLowerCase()) {
     case 'requests':
-      return `${formattedAmount} requests remaining`;
+      return t('quotaTooltip.requestsRemaining', { count: formattedAmount });
     case 'input':
-      return `${formattedAmount} input tokens remaining`;
+      return t('quotaTooltip.inputTokensRemaining', { count: formattedAmount });
     case 'output':
-      return `${formattedAmount} output tokens remaining`;
+      return t('quotaTooltip.outputTokensRemaining', { count: formattedAmount });
     default:
-      return `${formattedAmount} remaining`;
+      return t('quotaTooltip.amountRemaining', { count: formattedAmount });
   }
 }
 
-function renderEntitlementRows(entitlement: ProviderEntitlementEvidence | undefined) {
+function renderEntitlementRows(
+  entitlement: ProviderEntitlementEvidence | undefined,
+  t: (key: string) => string
+) {
   if (!entitlement) return null;
 
   const rows: Array<{ label: string; value: string | null }> = [];
   if (entitlement.rawTierLabel) {
-    rows.push({ label: 'Tier', value: entitlement.rawTierLabel });
+    rows.push({ label: t('quotaTooltip.tier'), value: entitlement.rawTierLabel });
   } else if (entitlement.normalizedTier !== 'unknown') {
-    rows.push({ label: 'Tier', value: entitlement.normalizedTier });
+    rows.push({ label: t('quotaTooltip.tier'), value: entitlement.normalizedTier });
   }
   if (entitlement.rawTierId) {
-    rows.push({ label: 'Tier ID', value: entitlement.rawTierId });
+    rows.push({ label: t('quotaTooltip.tierId'), value: entitlement.rawTierId });
   }
   if (entitlement.accessState !== 'entitled' || entitlement.capacityState !== 'available') {
     rows.push({
-      label: 'State',
+      label: t('quotaTooltip.state'),
       value: `${entitlement.accessState.replaceAll('_', ' ')} / ${entitlement.capacityState.replaceAll('_', ' ')}`,
     });
   }
@@ -169,8 +178,10 @@ function renderEntitlementRows(entitlement: ProviderEntitlementEvidence | undefi
  * Uses type guards for proper TypeScript narrowing
  */
 export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentProps) {
+  const { t } = useTranslation();
+
   if (!quota) {
-    return <p className="text-xs text-muted-foreground">Loading quota...</p>;
+    return <p className="text-xs text-muted-foreground">{t('quotaTooltip.loadingQuota')}</p>;
   }
 
   if (!quota.success) {
@@ -186,7 +197,7 @@ export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentPro
       <div className="max-w-sm space-y-2 text-xs">
         <div className="space-y-1">
           <p className={cn('font-semibold tracking-tight', failureToneClass)}>
-            {failureInfo?.label || quota.error || 'Failed to load quota'}
+            {failureInfo?.label || quota.error || t('quotaTooltip.failedLoadQuota')}
           </p>
           <p className="leading-relaxed text-foreground/90">
             {failureInfo?.summary || quota.error}
@@ -219,8 +230,8 @@ export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentPro
 
     return (
       <div className="text-xs space-y-1.5">
-        {renderEntitlementRows(quota.entitlement)}
-        <p className="font-medium">Model Quotas:</p>
+        {renderEntitlementRows(quota.entitlement, t)}
+        <p className="font-medium">{t('quotaTooltip.modelQuotas')}</p>
         {tierOrder.map((tier, idx) => {
           const models = groups.get(tier);
           if (!models || models.length === 0) return null;
@@ -263,8 +274,12 @@ export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentPro
 
     return (
       <div className="text-xs space-y-1.5">
-        <p className="font-medium">Rate Limits:</p>
-        {quota.planType && <p className="text-muted-foreground">Plan: {quota.planType}</p>}
+        <p className="font-medium">{t('quotaTooltip.rateLimits')}</p>
+        {quota.planType && (
+          <p className="text-muted-foreground">
+            {t('quotaTooltip.plan', { plan: quota.planType })}
+          </p>
+        )}
         {orderedWindows.map((w, index) => (
           <div
             key={`${w.label}-${w.resetAt ?? 'no-reset'}-${index}`}
@@ -332,14 +347,14 @@ export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentPro
 
     return (
       <div className="text-xs space-y-1.5">
-        <p className="font-medium">Rate Limits:</p>
+        <p className="font-medium">{t('quotaTooltip.rateLimits')}</p>
         {orderedWindows.map((window, index) => (
           <div
             key={`${window.rateLimitType}-${window.resetAt ?? 'no-reset'}-${window.status}-${index}`}
             className="flex justify-between gap-4"
           >
             <span className={cn(window.remainingPercent < 20 && lowQuotaTextClass)}>
-              {getClaudeWindowDisplayLabel(window.rateLimitType, window.label)}
+              {getClaudeWindowDisplayLabel(window.rateLimitType, window.label, t)}
             </span>
             <span className="font-mono">{window.remainingPercent}%</span>
           </div>
@@ -369,24 +384,24 @@ export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentPro
 
     return (
       <div className="text-xs space-y-1.5">
-        {renderEntitlementRows(quota.entitlement)}
+        {renderEntitlementRows(quota.entitlement, t)}
         {!hasEntitlementTier && quota.tierLabel && (
           <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">Tier</span>
+            <span className="text-muted-foreground">{t('quotaTooltip.tier')}</span>
             <span className="font-mono">{quota.tierLabel}</span>
           </div>
         )}
         {quota.creditBalance !== null && quota.creditBalance !== undefined && (
           <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">Credits</span>
+            <span className="text-muted-foreground">{t('quotaTooltip.credits')}</span>
             <span className="font-mono">{quota.creditBalance.toLocaleString()}</span>
           </div>
         )}
         <div className="space-y-1">
-          <p className="font-medium">Model quotas:</p>
+          <p className="font-medium">{t('quotaTooltip.modelQuotasLower')}</p>
           {sharedTokenType && (
             <p className="text-[11px] text-muted-foreground">
-              All buckets report {sharedTokenType}
+              {t('quotaTooltip.allBucketsReport', { tokenType: sharedTokenType })}
             </p>
           )}
         </div>
@@ -395,7 +410,8 @@ export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentPro
           const bucketModels = formatGeminiBucketModels(bucket.modelIds);
           const remainingAmountLabel = formatGeminiRemainingAmount(
             bucket.remainingAmount,
-            bucket.tokenType
+            bucket.tokenType,
+            t
           );
 
           return (
@@ -437,17 +453,22 @@ export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentPro
   // GitHub Copilot (ghcp) provider tooltip
   if (isGhcpQuotaResult(quota)) {
     const snapshotRows = [
-      { label: 'Premium Interactions', snapshot: quota.snapshots.premiumInteractions },
-      { label: 'Chat', snapshot: quota.snapshots.chat },
-      { label: 'Completions', snapshot: quota.snapshots.completions },
+      {
+        label: t('quotaTooltip.premiumInteractions'),
+        snapshot: quota.snapshots.premiumInteractions,
+      },
+      { label: t('quotaTooltip.chat'), snapshot: quota.snapshots.chat },
+      { label: t('quotaTooltip.completions'), snapshot: quota.snapshots.completions },
     ];
     const effectiveResetTime = quota.quotaResetDate ?? resetTime;
     const planLabel = formatPlanLabel(quota.planType);
 
     return (
       <div className="text-xs space-y-1.5">
-        <p className="font-medium">Quota Snapshots:</p>
-        {planLabel && <p className="text-muted-foreground">Plan: {planLabel}</p>}
+        <p className="font-medium">{t('quotaTooltip.quotaSnapshots')}</p>
+        {planLabel && (
+          <p className="text-muted-foreground">{t('quotaTooltip.plan', { plan: planLabel })}</p>
+        )}
         {snapshotRows.map(({ label, snapshot }) => {
           const isLow = snapshot.percentRemaining < 20;
           return (
@@ -456,13 +477,16 @@ export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentPro
                 <span className={cn(isLow && lowQuotaTextClass)}>{label}</span>
                 <span className={cn('font-mono', isLow && lowQuotaTextClass)}>
                   {snapshot.unlimited
-                    ? 'Unlimited'
+                    ? t('quotaTooltip.unlimited')
                     : `${formatQuotaPercent(snapshot.percentRemaining)}%`}
                 </span>
               </div>
               {!snapshot.unlimited && (
                 <div className="text-[11px] text-muted-foreground">
-                  {snapshot.remaining}/{snapshot.entitlement} remaining
+                  {t('quotaTooltip.remaining', {
+                    remaining: snapshot.remaining,
+                    entitlement: snapshot.entitlement,
+                  })}
                 </div>
               )}
             </div>
@@ -480,13 +504,15 @@ export function QuotaTooltipContent({ quota, resetTime }: QuotaTooltipContentPro
  * Reset time indicator shown at bottom of tooltip
  */
 function ResetTimeIndicator({ resetTime }: { resetTime: string | null }) {
+  const { t } = useTranslation();
+
   if (!resetTime) return null;
 
   return (
     <div className="flex items-center gap-1.5 border-t border-border/60 pt-1">
       <Clock className="h-3 w-3 text-sky-600 dark:text-sky-300" />
       <span className="font-medium text-sky-600 dark:text-sky-300">
-        Resets {formatResetTime(resetTime)}
+        {t('quotaTooltip.resets', { time: formatResetTime(resetTime) })}
       </span>
     </div>
   );
@@ -501,6 +527,8 @@ function CodexResetIndicators({
   weeklyResetTime: string | null;
   fallbackResetTime: string | null;
 }) {
+  const { t } = useTranslation();
+
   const hasSpecificReset = !!fiveHourResetTime || !!weeklyResetTime;
   if (!hasSpecificReset && !fallbackResetTime) return null;
 
@@ -510,7 +538,7 @@ function CodexResetIndicators({
         <div className="flex items-center gap-1.5">
           <Clock className="h-3 w-3 text-sky-600 dark:text-sky-300" />
           <span className="font-medium text-sky-600 dark:text-sky-300">
-            5h resets {formatResetTime(fiveHourResetTime)}
+            {t('quotaTooltip.fiveHourResets', { time: formatResetTime(fiveHourResetTime) })}
           </span>
         </div>
       )}
@@ -518,7 +546,7 @@ function CodexResetIndicators({
         <div className="flex items-center gap-1.5">
           <Clock className="h-3 w-3 text-indigo-600 dark:text-indigo-300" />
           <span className="font-medium text-indigo-600 dark:text-indigo-300">
-            Weekly resets {formatResetTime(weeklyResetTime)}
+            {t('quotaTooltip.weeklyResets', { time: formatResetTime(weeklyResetTime) })}
           </span>
         </div>
       )}

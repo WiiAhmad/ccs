@@ -11,6 +11,7 @@ import { useCliproxyAuth } from '@/hooks/use-cliproxy';
 import { useCliproxyAuthFlow } from '@/hooks/use-cliproxy-auth-flow';
 import { cn } from '@/lib/utils';
 import { CLIPROXY_PROVIDERS, getProviderDisplayName } from '@/lib/provider-config';
+import { useTranslation } from 'react-i18next';
 
 interface VersionInfo {
   currentVersion: string;
@@ -117,6 +118,7 @@ export function CliproxyHeader({
 }: CliproxyHeaderProps) {
   const { data: authData } = useCliproxyAuth();
   const { provider: authProvider, isAuthenticating, startAuth } = useCliproxyAuthFlow();
+  const { t } = useTranslation();
   const lastUpdatedText = useRelativeTime(lastUpdated);
   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
 
@@ -157,7 +159,9 @@ export function CliproxyHeader({
           <h1 className="text-2xl font-bold tracking-tight">
             {versionInfo?.backendLabel ?? 'CLIProxy'}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">CCS-level account management</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t('cliproxyHeader.ccsLevelAccountManagement')}
+          </p>
         </div>
 
         {/* Login Buttons - Wrap on mobile */}
@@ -188,7 +192,7 @@ export function CliproxyHeader({
               isRunning ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground'
             )}
           />
-          {isRunning ? 'Running' : 'Offline'}
+          {isRunning ? t('cliproxyStatsOverview.running') : t('cliproxyStatsOverview.offline')}
         </Badge>
 
         {versionInfo && (

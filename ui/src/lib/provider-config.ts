@@ -239,7 +239,7 @@ const PROVIDER_NAMES: Record<string, string> = {
 export function getProviderDisplayName(provider: unknown): string {
   const normalized = normalizeProviderInput(provider);
   if (!normalized) {
-    return 'Unknown provider';
+    return 'Unknown provider'; // TODO i18n: missing key
   }
   return PROVIDER_NAMES[normalized] || String(provider);
 }
@@ -283,7 +283,7 @@ export function isDeviceCodeProvider(provider: unknown): boolean {
 export function getDeviceCodeProviderDisplayName(provider: unknown): string {
   const normalized = normalizeProviderInput(provider);
   if (!normalized) {
-    return 'Unknown provider';
+    return 'Unknown provider'; // TODO i18n: missing key
   }
   if (isValidProvider(normalized)) {
     return DEVICE_CODE_PROVIDER_DISPLAY_NAMES[normalized] || getProviderDisplayName(normalized);
@@ -296,10 +296,10 @@ export function getDeviceCodeProviderInstruction(provider: unknown): string {
   const normalized = normalizeProviderInput(provider);
   if (isValidProvider(normalized)) {
     return (
-      DEVICE_CODE_PROVIDER_INSTRUCTIONS[normalized] || 'Complete the authorization in your browser.'
+      DEVICE_CODE_PROVIDER_INSTRUCTIONS[normalized] || 'Complete the authorization in your browser.' // TODO i18n: missing key
     );
   }
-  return 'Complete the authorization in your browser.';
+  return 'Complete the authorization in your browser.'; // TODO i18n: missing key
 }
 
 /** Kiro auth methods exposed in CCS UI (aligned with CLIProxyAPIPlus support). */
@@ -326,36 +326,36 @@ export const DEFAULT_KIRO_AUTH_METHOD: KiroAuthMethod = 'aws';
 export const KIRO_AUTH_METHOD_OPTIONS: readonly KiroAuthMethodOption[] = [
   {
     id: 'aws',
-    label: 'AWS Builder ID (Recommended)',
-    description: 'Device code flow for AWS organizations and Builder ID accounts.',
+    label: 'AWS Builder ID (Recommended)', // TODO i18n: missing key for kiro auth method aws
+    description: 'Device code flow for AWS organizations and Builder ID accounts.', // TODO i18n: missing key
     flowType: 'device_code',
     startEndpoint: 'start',
   },
   {
     id: 'aws-authcode',
-    label: 'AWS Builder ID (Auth Code)',
-    description: 'Authorization code flow via CLI binary.',
+    label: 'AWS Builder ID (Auth Code)', // TODO i18n: missing key
+    description: 'Authorization code flow via CLI binary.', // TODO i18n: missing key
     flowType: 'authorization_code',
     startEndpoint: 'start',
   },
   {
     id: 'google',
-    label: 'Google OAuth',
-    description: 'Social OAuth flow with callback URL support.',
+    label: 'Google OAuth', // TODO i18n: missing key
+    description: 'Social OAuth flow with callback URL support.', // TODO i18n: missing key
     flowType: 'authorization_code',
     startEndpoint: 'start-url',
   },
   {
     id: 'github',
-    label: 'GitHub OAuth',
-    description: 'Social OAuth flow via management API callback.',
+    label: 'GitHub OAuth', // TODO i18n: missing key
+    description: 'Social OAuth flow via management API callback.', // TODO i18n: missing key
     flowType: 'authorization_code',
     startEndpoint: 'start-url',
   },
   {
     id: 'idc',
-    label: 'AWS Identity Center (IDC)',
-    description: 'Use your organization start URL with auth code or device flow.',
+    label: 'AWS Identity Center (IDC)', // TODO i18n: missing key
+    description: 'Use your organization start URL with auth code or device flow.', // TODO i18n: missing key
     flowType: 'authorization_code',
     startEndpoint: 'start',
   },

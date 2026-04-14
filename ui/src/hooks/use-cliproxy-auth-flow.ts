@@ -6,6 +6,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api-client';
 import { isValidProvider, isDeviceCodeProvider } from '@/lib/provider-config';
 
@@ -77,6 +78,7 @@ const INITIAL_STATE: AuthFlowState = {
 };
 
 export function useCliproxyAuthFlow() {
+  const { t } = useTranslation();
   const [state, setState] = useState<AuthFlowState>(INITIAL_STATE);
   const stateRef = useRef<AuthFlowState>(INITIAL_STATE);
 
@@ -129,6 +131,7 @@ export function useCliproxyAuthFlow() {
           setState((prev) => ({
             ...prev,
             isAuthenticating: false,
+            // TODO i18n: missing key for 'Authentication timed out. Please try again.'
             error: 'Authentication timed out. Please try again.',
           }));
         }
@@ -158,6 +161,7 @@ export function useCliproxyAuthFlow() {
           const hasAccount = typeof data.account === 'object' && data.account !== null;
           if (!hasAccount) {
             stopPolling();
+            // TODO i18n: missing key for 'Authenticated account could not be registered'
             const errorMsg = 'Authenticated account could not be registered';
             toast.error(errorMsg);
             setState((prev) => ({
@@ -173,7 +177,7 @@ export function useCliproxyAuthFlow() {
           queryClient.invalidateQueries({ queryKey: ['cliproxy-accounts'] });
           queryClient.invalidateQueries({ queryKey: ['account-quota'] });
           invalidateCliproxyRoutingData(queryClient);
-          toast.success(`${provider} authentication successful`);
+          toast.success(t('toasts.providerAuthSuccess', { provider }));
           openedAuthUrlRef.current = false;
           setState(INITIAL_STATE);
         } else if (data.status === 'auth_url') {
@@ -194,7 +198,7 @@ export function useCliproxyAuthFlow() {
             data.user_code && data.verification_url
               ? `Open ${data.verification_url} and enter code: ${data.user_code}`
               : 'Switch to Device Code method and try again.';
-          toast.error('Provider returned Device Code flow in callback mode');
+          toast.error(t('toasts.providerDeviceCodeInCallback'));
           setState((prev) => ({
             ...prev,
             isAuthenticating: false,
@@ -222,6 +226,7 @@ export function useCliproxyAuthFlow() {
         }
 
         stopPolling();
+        // TODO i18n: missing key for 'Lost contact with the auth status endpoint'
         const message =
           error instanceof Error && error.message.trim().length > 0
             ? error.message
@@ -234,12 +239,13 @@ export function useCliproxyAuthFlow() {
         }));
       }
     },
-    [isActiveAttempt, queryClient, stopPolling]
+    [isActiveAttempt, queryClient, stopPolling, t]
   );
 
   const startAuth = useCallback(
     async (provider: string, options?: StartAuthOptions) => {
       if (!isValidProvider(provider)) {
+        // TODO i18n: missing key for 'Unknown provider: {{provider}}'
         setState({
           ...INITIAL_STATE,
           error: `Unknown provider: ${provider}`,
@@ -313,6 +319,7 @@ export function useCliproxyAuthFlow() {
                 openedAuthUrlRef.current = false;
                 setState(INITIAL_STATE);
               } else {
+                // TODO i18n: missing key for 'Authenticated account could not be registered' (start endpoint)
                 const errorMsg =
                   typeof data.error === 'string'
                     ? data.error
@@ -363,6 +370,7 @@ export function useCliproxyAuthFlow() {
           const success = data.success === true;
 
           if (!response.ok || !success) {
+            // TODO i18n: missing key for 'Failed to start OAuth'
             const errorMsg = typeof data.error === 'string' ? data.error : 'Failed to start OAuth';
             throw new Error(errorMsg);
           }
@@ -475,9 +483,10 @@ export function useCliproxyAuthFlow() {
           queryClient.invalidateQueries({ queryKey: ['cliproxy-accounts'] });
           queryClient.invalidateQueries({ queryKey: ['account-quota'] });
           invalidateCliproxyRoutingData(queryClient);
-          toast.success(`${currentProvider} authentication successful`);
+          toast.success(t('toasts.providerAuthSuccess', { provider: currentProvider }));
           setState(INITIAL_STATE);
         } else {
+          // TODO i18n: missing key for 'Callback submission failed'
           const errorMsg =
             typeof data.error === 'string'
               ? data.error
@@ -490,12 +499,13 @@ export function useCliproxyAuthFlow() {
         if (!isActiveAttempt(attemptId)) {
           return;
         }
+        // TODO i18n: missing key for 'Failed to submit callback'
         const message = error instanceof Error ? error.message : 'Failed to submit callback';
         toast.error(message);
         setState((prev) => ({ ...prev, isSubmittingCallback: false, error: message }));
       }
     },
-    [isActiveAttempt, state.provider, queryClient, stopPolling]
+    [isActiveAttempt, state.provider, queryClient, stopPolling, t]
   );
 
   return useMemo(

@@ -142,6 +142,7 @@ function parseRawSettings(value: string): RawSettingsParseResult {
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
       return {
         isValid: false,
+        /* TODO i18n: missing key for "Raw settings must be a JSON object" */
         error: 'Raw settings must be a JSON object',
       };
     }
@@ -153,6 +154,7 @@ function parseRawSettings(value: string): RawSettingsParseResult {
   } catch (error) {
     return {
       isValid: false,
+      /* TODO i18n: missing key for "Invalid JSON" */
       error: (error as Error).message || 'Invalid JSON',
     };
   }
@@ -1075,6 +1077,7 @@ export function CursorPage() {
                                 className="text-xs h-7 gap-1"
                                 onClick={() => applyPreset('codex53')}
                                 disabled={modelsLoading || models.length === 0}
+                                /* TODO i18n: missing key for "OpenAI-only mapping: GPT-5.3 Codex / Codex Max / GPT-5 Mini" */
                                 title="OpenAI-only mapping: GPT-5.3 Codex / Codex Max / GPT-5 Mini"
                               >
                                 <Zap className="w-3 h-3" />
@@ -1086,6 +1089,7 @@ export function CursorPage() {
                                 className="text-xs h-7 gap-1"
                                 onClick={() => applyPreset('claude46')}
                                 disabled={modelsLoading || models.length === 0}
+                                /* TODO i18n: missing key for "Claude-first mapping: Opus 4.6 / Sonnet 4.5 / Haiku 4.5" */
                                 title="Claude-first mapping: Opus 4.6 / Sonnet 4.5 / Haiku 4.5"
                               >
                                 <Zap className="w-3 h-3" />
@@ -1097,6 +1101,7 @@ export function CursorPage() {
                                 className="text-xs h-7 gap-1"
                                 onClick={() => applyPreset('gemini3')}
                                 disabled={modelsLoading || models.length === 0}
+                                /* TODO i18n: missing key for "Gemini-first mapping: Gemini 3 Pro + Gemini 3 Flash" */
                                 title="Gemini-first mapping: Gemini 3 Pro + Gemini 3 Flash"
                               >
                                 <Zap className="w-3 h-3" />
@@ -1177,7 +1182,7 @@ export function CursorPage() {
 
                             <div className="space-y-2">
                               <Label htmlFor="cursor-port" className="text-xs">
-                                Port
+                                {t('cursorPage.port')}
                               </Label>
                               <Input
                                 id="cursor-port"
@@ -1256,6 +1261,7 @@ export function CursorPage() {
                                 {rawSettings?.path ?? '~/.ccs/cursor.settings.json'}
                               </code>
                             </div>
+                            {/* TODO i18n: missing key for model mapping env var info paragraph */}
                             <p className="text-xs text-muted-foreground">
                               Model mapping writes `ANTHROPIC_MODEL`,
                               `ANTHROPIC_DEFAULT_OPUS_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, and

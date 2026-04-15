@@ -127,4 +127,23 @@ describe('AccountSurfaceCard', () => {
     expect(screen.getByText('Pers')).toBeInTheDocument();
     expect(screen.getByText('Pro')).toBeInTheDocument();
   });
+
+  it('lets live paid Codex plans override stale free identity badges', () => {
+    render(
+      <AccountSurfaceCard
+        mode="compact"
+        provider="codex"
+        accountId="user@example.com#free"
+        email="user@example.com"
+        displayEmail="user@example.com"
+        tokenFile="codex-user@example.com-free.json"
+        quota={createCodexQuotaResult({ planType: 'plus' })}
+        showQuota={false}
+      />
+    );
+
+    expect(screen.getByText('Pers')).toBeInTheDocument();
+    expect(screen.getByText('Plus')).toBeInTheDocument();
+    expect(screen.queryByTitle('Free')).not.toBeInTheDocument();
+  });
 });

@@ -113,6 +113,35 @@ function getCodexPlanAudience(quota: UnifiedQuotaResult | undefined): AccountAud
   return 'unknown';
 }
 
+function resolveCodexAudience(
+  identityAudience: AccountAudience,
+  planAudience: AccountAudience
+): AccountAudience {
+  if (planAudience === 'unknown') {
+    return identityAudience;
+  }
+
+  if (planAudience === 'business') {
+    return 'business';
+  }
+
+  if (identityAudience === 'business') {
+    return 'business';
+  }
+
+  if (planAudience === 'personal') {
+    return 'personal';
+  }
+
+  if (planAudience === 'free') {
+    return identityAudience === 'unknown' || identityAudience === 'free'
+      ? 'free'
+      : identityAudience;
+  }
+
+  return identityAudience;
+}
+
 function getCodexPlanDetailLabel(quota: UnifiedQuotaResult | undefined): string | null {
   if (!quota || !('planType' in quota) || !quota.planType) {
     return null;
@@ -157,9 +186,16 @@ export function AccountSurfaceCard({
     normalizedProvider === 'codex' ? getCodexPlanAudience(quota) : 'unknown';
   const codexPlanDetailLabel =
     normalizedProvider === 'codex' ? getCodexPlanDetailLabel(quota) : null;
-  const effectiveAudience = identity.audience !== 'unknown' ? identity.audience : codexPlanAudience;
+  const effectiveAudience =
+    normalizedProvider === 'codex'
+      ? resolveCodexAudience(identity.audience, codexPlanAudience)
+      : identity.audience !== 'unknown'
+        ? identity.audience
+        : codexPlanAudience;
   const effectiveAudienceLabel =
-    identity.audienceLabel ?? getDetailedAudienceLabel(effectiveAudience);
+    identity.audience === effectiveAudience
+      ? (identity.audienceLabel ?? getDetailedAudienceLabel(effectiveAudience))
+      : getDetailedAudienceLabel(effectiveAudience);
   const resolvedDetailLabel = identity.detailLabel ?? codexPlanDetailLabel;
   const resolvedCompactDetailLabel = identity.compactDetailLabel ?? codexPlanDetailLabel;
   const showTierBadge =

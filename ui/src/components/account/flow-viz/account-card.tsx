@@ -104,6 +104,35 @@ function getCodexPlanAudience(quota: unknown): AccountAudience {
   return 'unknown';
 }
 
+function resolveCodexAudience(
+  identityAudience: AccountAudience,
+  planAudience: AccountAudience
+): AccountAudience {
+  if (planAudience === 'unknown') {
+    return identityAudience;
+  }
+
+  if (planAudience === 'business') {
+    return 'business';
+  }
+
+  if (identityAudience === 'business') {
+    return 'business';
+  }
+
+  if (planAudience === 'personal') {
+    return 'personal';
+  }
+
+  if (planAudience === 'free') {
+    return identityAudience === 'unknown' || identityAudience === 'free'
+      ? 'free'
+      : identityAudience;
+  }
+
+  return identityAudience;
+}
+
 function getCodexPlanDetailLabel(quota: unknown): string | null {
   if (!quota || typeof quota !== 'object' || !('planType' in quota)) {
     return null;
@@ -162,7 +191,7 @@ function getVariantAudience(
   },
   quota?: unknown
 ) {
-  return variant.audience !== 'unknown' ? variant.audience : getCodexPlanAudience(quota);
+  return resolveCodexAudience(variant.audience, getCodexPlanAudience(quota));
 }
 
 function getVariantInlineLabel(
@@ -176,8 +205,11 @@ function getVariantInlineLabel(
   quota?: unknown
 ) {
   const detailLabel = getVariantDetailLabel(variant, quota);
+  const audience = getVariantAudience(variant, quota);
   const audienceLabel =
-    variant.audienceLabel ?? getDetailedAudienceLabel(getVariantAudience(variant, quota));
+    variant.audience === audience
+      ? (variant.audienceLabel ?? getDetailedAudienceLabel(audience))
+      : getDetailedAudienceLabel(audience);
   const composedLabel = [audienceLabel, detailLabel].filter(Boolean).join(' · ');
   return composedLabel || variant.inlineLabel || null;
 }
@@ -207,8 +239,8 @@ function getVariantMarkerLabel(
 
   const normalizedFallback =
     compactDetailLabel?.trim() ||
-    variant.audienceLabel?.trim() ||
     getDetailedAudienceLabel(audience) ||
+    variant.audienceLabel?.trim() ||
     variant.detailLabel?.trim();
   return normalizedFallback?.[0]?.toUpperCase() ?? '?';
 }

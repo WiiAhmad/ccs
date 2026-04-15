@@ -11,6 +11,23 @@ This is useful for providers such as:
 - llama.cpp servers
 - OpenAI-compatible self-hosted gateways
 
+## Related Project: claude-code-router
+
+[claude-code-router](https://github.com/musistudio/claude-code-router) is the
+main external reference that informed this CCS work. Their Anthropic/OpenAI
+transformer design helped shape the routing approach here.
+
+When to use CCR:
+
+- you want a standalone router without CCS profile integration
+- you do not need CCS account/runtime management around the request flow
+
+When to use CCS:
+
+- you already use CCS API profiles or runtime bridges
+- you want the proxy flow available through `ccs <profile>` and `ccs proxy ...`
+- you want the routing behavior documented and tested inside the CCS workflow
+
 ## What CCS Does
 
 When you launch a compatible settings profile with the Claude target, CCS now:

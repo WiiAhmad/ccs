@@ -69,6 +69,17 @@ eval "$(ccs proxy activate)"
 
 Guide: [OpenAI-Compatible Provider Routing](./docs/openai-compatible-providers.md)
 
+### Related Project: claude-code-router
+
+[claude-code-router](https://github.com/musistudio/claude-code-router) is an
+excellent standalone tool for routing Claude Code requests to OpenAI-compatible
+providers. CCS's local proxy and SSE transformation work was directly informed
+by CCR's transformer architecture.
+
+Use CCR when you want a standalone router without CCS profile management.
+Use CCS when you want the routing flow integrated with CCS profiles, runtime
+bridges, and the existing `ccs` command surface.
+
 Need the full setup path instead of the short version?
 
 | Need | Start here |

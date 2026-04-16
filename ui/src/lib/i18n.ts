@@ -1063,6 +1063,8 @@ const resources = {
       },
       analytics: {
         title: 'Analytics',
+        noDailyUsage: 'No usage data for today',
+        noUsageData: 'No usage data available',
         subtitle: 'Track usage and insights',
         month: 'Month',
         allTime: 'All Time',
@@ -3463,6 +3465,8 @@ const resources = {
       },
       analytics: {
         title: '分析',
+        noDailyUsage: '今日无使用数据',
+        noUsageData: '无可用使用数据',
         subtitle: '追踪使用情况与洞察',
         month: '本月',
         allTime: '全部时间',
@@ -5902,6 +5906,8 @@ const resources = {
       },
       analytics: {
         title: 'Phân tích',
+        noDailyUsage: 'Không có dữ liệu sử dụng cho hôm nay',
+        noUsageData: 'Không có dữ liệu sử dụng',
         subtitle: 'Theo dõi việc sử dụng và thông tin chi tiết',
         month: 'Tháng',
         allTime: 'Tất cả thời gian',
@@ -8370,6 +8376,8 @@ const resources = {
       },
       analytics: {
         title: '分析',
+        noDailyUsage: '本日の使用データはありません',
+        noUsageData: '利用可能な使用データはありません',
         subtitle: '利用状況とインサイトを確認',
         month: '月',
         allTime: '全期間',

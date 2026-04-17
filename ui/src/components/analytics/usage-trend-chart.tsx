@@ -17,6 +17,7 @@ import {
   AreaChart,
 } from 'recharts';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { DailyUsage, HourlyUsage } from '@/hooks/use-usage';
@@ -39,14 +40,13 @@ export function UsageTrendChart({
   className,
 }: UsageTrendChartProps) {
   const { privacyMode } = usePrivacy();
-  // TODO i18n: uncomment when keys for "No usage data for today" / "No usage data available" are added
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
 
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
 
     // For hourly data, already sorted ascending from API
-    const sortedData = granularity === 'hourly' ? data : [...data].reverse();
+    const sortedData = data;
 
     return sortedData.map((item) => {
       // Handle hourly vs daily data format
@@ -67,8 +67,7 @@ export function UsageTrendChart({
     return (
       <div className={cn('h-full flex items-center justify-center', className)}>
         <p className="text-muted-foreground">
-          {/* TODO i18n: missing keys for "No usage data for today" / "No usage data available" */}
-          {granularity === 'hourly' ? 'No usage data for today' : 'No usage data available'}
+          {granularity === 'hourly' ? t('analytics.noDailyUsage') : t('analytics.noUsageData')}
         </p>
       </div>
     );

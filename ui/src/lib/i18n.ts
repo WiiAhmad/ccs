@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { getInitialLocale } from '@/lib/locales';
+import { getInitialLocale } from './locales';
 
 const resources = {
   en: {
@@ -30,6 +30,7 @@ const resources = {
         allAccounts: 'All Accounts',
         sharedData: 'Shared Data',
         compatibleClis: 'Compatible',
+        deprecated: 'Deprecated',
         factoryDroid: 'Factory Droid',
         system: 'System',
         health: 'Health',
@@ -50,7 +51,7 @@ const resources = {
         remoteGuardLabel: 'Remote access guard',
         loading: 'Checking dashboard access…',
         loginDescription:
-          'Use the username and password configured on the host to access the dashboard.',
+          'Use the username and password configured for this CCS instance to access the dashboard.',
         username: 'Username',
         password: 'Password',
         usernamePlaceholder: 'Enter username',
@@ -62,21 +63,22 @@ const resources = {
         darkMode: 'Dark',
         noDefaultCredentials: 'No default credentials ship with CCS.',
         credentialsHint:
-          'Credentials are created on the host with `ccs config auth setup`, then used here.',
-        remoteSetupTitle: 'Remote access needs host setup',
+          'Credentials are created with `ccs config auth setup` on the CCS host. Docker deployments must run that command inside the container.',
+        remoteSetupTitle: 'Remote access needs auth setup',
         remoteSetupDescription:
-          'This dashboard was opened from a non-local address, but dashboard auth is not enabled on the host yet.',
+          'This dashboard was opened from a non-local address, but dashboard auth is not enabled for this CCS instance yet.',
         incompleteSetupDescription:
-          'Dashboard auth is turned on, but the host setup is incomplete. Finish the host configuration before signing in.',
+          'Dashboard auth is turned on, but the setup is incomplete. Finish the configuration for this CCS instance before signing in.',
         safetyNoteRemote:
-          'Remote management stays locked until the host owner enables dashboard auth.',
+          'Remote management stays locked until the CCS host owner enables dashboard auth.',
         safetyNoteLocal:
           'If you are on the same machine, the localhost URL remains the simplest path in.',
         safetyNoteSession:
-          'Successful sign-ins create an HTTP-only session that stays scoped to this host.',
-        hostStepTitle: 'On the host machine',
+          'Successful sign-ins create an HTTP-only session that stays scoped to this dashboard host.',
+        hostStepTitle: 'On the CCS host',
         hostStepDescription:
           'Create or re-enable dashboard credentials, then reopen this page from the remote device.',
+        dockerStepDescription: 'Docker deployment? Run the setup inside the running container:',
         localStepTitle: 'If this is your machine',
         localStepDescription:
           'Open the localhost URL printed by `ccs config` instead of the LAN or Tailscale address.',
@@ -687,6 +689,20 @@ const resources = {
           'Power user mode is unavailable. Complete the required provider safety step and retry.',
         authMethod: 'Auth Method',
         selectKiroAuthMethod: 'Select Kiro auth method',
+        gitlabAuthMethod: 'GitLab auth method',
+        selectGitlabAuthMethod: 'Select GitLab auth method',
+        gitlabAuthOAuth: 'Browser OAuth',
+        gitlabAuthPat: 'Personal Access Token',
+        gitlabAuthHint:
+          'Use Browser OAuth for gitlab.com, or PAT for self-hosted and admin-managed setups.',
+        gitlabUrl: 'GitLab URL',
+        gitlabUrlPlaceholder: 'https://gitlab.com',
+        gitlabUrlHint:
+          'Optional. Leave blank for gitlab.com, or set your self-hosted GitLab base URL.',
+        gitlabPat: 'Personal Access Token',
+        gitlabPatPlaceholder: 'glpat-...',
+        gitlabPatHint: 'Token must include at least',
+        gitlabPatRequired: 'GitLab Personal Access Token is required for PAT login.',
         nicknameRequired: 'Nickname (required)',
         nicknameOptional: 'Nickname (optional)',
         nicknamePlaceholder: 'e.g., work, personal',
@@ -857,6 +873,7 @@ const resources = {
         configFileNotFound: 'Config file not found',
       },
       settingsTabs: {
+        browser: 'Browser',
         web: 'Web',
         image: 'Image',
         channels: 'Channels',
@@ -1048,6 +1065,8 @@ const resources = {
       },
       analytics: {
         title: 'Analytics',
+        noDailyUsage: 'No usage data for today',
+        noUsageData: 'No usage data available',
         subtitle: 'Track usage and insights',
         month: 'Month',
         allTime: 'All Time',
@@ -1257,11 +1276,17 @@ const resources = {
       cursorPage: {
         title: 'Cursor',
         beta: 'Beta',
-        subtitle: 'Dedicated Cursor integration controls',
-        unofficialTitle: 'Unofficial API - Use at Your Own Risk',
-        unofficialItem1: 'Reverse-engineered integration may break anytime',
-        unofficialItem2: 'Abuse or excessive usage may risk account restrictions',
-        unofficialItem3: 'No warranty, no responsibility from CCS',
+        deprecated: 'Deprecated',
+        subtitle: 'Deprecated local bridge for legacy Cursor setups',
+        unofficialTitle: 'Deprecated legacy bridge - prefer CLIProxy-backed Cursor',
+        unofficialItem1: 'Supported path: CLIProxy-backed Cursor auth and account management',
+        unofficialItem2: 'This reverse-engineered local bridge remains only for existing setups',
+        unofficialItem3: 'CCS provides no warranty for this legacy path',
+        supportedPathTitle: 'Supported path',
+        supportedPathDesc:
+          'Use CLIProxy-backed Cursor auth and account management for new setups. Keep the legacy bridge below only if you still rely on the old local daemon flow.',
+        startCliproxyAuth: 'Start CLIProxy Cursor Auth',
+        openCliproxyCursor: 'Open CLIProxy Cursor',
         integration: 'Integration',
         authentication: 'Authentication',
         daemon: 'Daemon',
@@ -1272,11 +1297,11 @@ const resources = {
         notConnected: 'Not connected',
         running: 'Running',
         stopped: 'Stopped',
-        actions: 'Actions',
+        actions: 'Legacy Actions',
         disableIntegration: 'Disable Integration',
         enableIntegration: 'Enable Integration',
-        autoDetectAuth: 'Auto-detect Auth',
-        manualAuthImport: 'Manual Auth Import',
+        autoDetectAuth: 'Legacy IDE Auto-detect',
+        manualAuthImport: 'Legacy Manual Import',
         stopDaemon: 'Stop Daemon',
         startDaemon: 'Start Daemon',
         port: 'Port',
@@ -1522,12 +1547,13 @@ const resources = {
       },
       localhostDisclaimer: {
         remoteReadonlyAuthDisabledLong:
-          'Remote dashboard access is read-only because dashboard auth is currently disabled on the host. Re-enable dashboard auth on the host to unlock remote changes.',
+          'Remote dashboard access is read-only because dashboard auth is currently disabled for this CCS instance. Re-enable it on the CCS host. Docker deployments must do that inside the running container.',
         remoteReadonlyAuthDisabledShort:
-          'Remote dashboard is read-only until dashboard auth is re-enabled on the host.',
+          'Remote dashboard is read-only until dashboard auth is re-enabled for this CCS instance.',
         remoteReadonlySetupLong:
-          'Remote dashboard access is read-only until you run ccs config auth setup on the host.',
-        remoteReadonlySetupShort: 'Remote dashboard is read-only until host auth is configured.',
+          'Remote dashboard access is read-only until you run ccs config auth setup for this CCS instance. Docker deployments must run it inside the container.',
+        remoteReadonlySetupShort:
+          'Remote dashboard is read-only until auth is configured for this CCS instance.',
         localLong: 'This dashboard runs locally. All data stays on your machine.',
         localShort: 'Local dashboard - data stays on your device.',
         dismiss: 'Dismiss disclaimer',
@@ -1701,8 +1727,18 @@ const resources = {
       },
       accountSurfaceCard: {
         business: 'Biz',
+        free: 'Free',
         personal: 'Pers',
         variant: 'Variant',
+      },
+      accountIdentity: {
+        business: 'Business',
+        personal: 'Personal',
+        free: 'Free',
+        team: 'Team',
+        plus: 'Plus',
+        pro: 'Pro',
+        workspace: 'Workspace {{id}}',
       },
       accountCardStats: {
         notUsedYet: 'Not used yet',
@@ -2196,6 +2232,9 @@ const resources = {
         profileExportDownloaded: 'Profile export downloaded',
         profileImportFailed: 'Failed to import profile bundle',
       },
+      providerConfig: {
+        defaultDeviceCodeInstruction: 'Complete the authorization in your browser.',
+      },
 
       // ========================================
       // Domain 7: Profiles / Settings / Pages
@@ -2386,6 +2425,63 @@ const resources = {
           description: 'Configure image analysis settings.',
           loading: 'Loading image settings...',
         },
+        browserSection: {
+          title: 'Browser',
+          description: 'Primary setup surface for managed browser automation in CCS.',
+          primaryTitle: 'Settings > Browser is the primary browser setup surface.',
+          primaryDescription:
+            'Configure Claude Browser Attach and Codex Browser Tools here, then use the guidance below to launch or verify each lane.',
+          readiness: 'Readiness',
+          nextStep: 'Next step',
+          technicalDetails: 'Technical Details',
+          diagnostics: 'Diagnostics',
+          actions: {
+            saveClaude: 'Save Claude settings',
+            saveCodex: 'Save Codex settings',
+            testConnection: 'Test connection',
+            copyLaunchCommand: 'Copy launch command',
+          },
+          messages: {
+            statusRefreshed: 'Browser status refreshed',
+            launchCommandCopied: 'Launch command copied',
+          },
+          claude: {
+            title: 'Claude Browser Attach',
+            description:
+              'Attach Claude-target launches to a managed Chrome session with remote debugging enabled.',
+            enabledLabel: 'Enable Claude Browser Attach',
+            enabledDescription:
+              'When enabled, CCS prepares the managed browser MCP runtime for Claude-target launches.',
+            userDataDir: 'Chrome user-data directory',
+            userDataDirHint:
+              'Use a dedicated Chrome profile directory so attach-mode state stays isolated from your daily browser.',
+            devtoolsPort: 'DevTools port',
+            devtoolsPortHint: 'Use the same port when you launch Chrome in attach mode.',
+            devtoolsPortInvalid: 'Enter a valid port between 1 and 65535.',
+            effectivePath: 'Effective attach path',
+            recommendedPath: 'Recommended path',
+            managedRuntime: 'Managed browser runtime',
+            overrideMessage:
+              'An environment override is currently active from {{source}}. This dashboard remains the source of truth once that override is removed.',
+            launchGuidance: 'Launch guidance',
+            launchGuidanceHint:
+              'Start Chrome with remote debugging enabled, then rerun Test connection if needed.',
+          },
+          codex: {
+            title: 'Codex Browser Tools',
+            description:
+              'Controls the managed Playwright MCP override path for Codex-target launches.',
+            enabledLabel: 'Enable Codex Browser Tools',
+            enabledDescription:
+              'Keep this on to make the Browser page the first-class setup surface for Codex browser tooling.',
+            serverName: 'Managed server name',
+            overrideSupport: 'Config override support',
+            overrideSupported: 'Supported',
+            overrideUnsupported: 'Not supported',
+            binary: 'Detected Codex binary',
+            notDetected: 'Not detected',
+          },
+        },
       },
       codexPage: {
         title: 'Codex',
@@ -2465,6 +2561,7 @@ const resources = {
         allAccounts: '全部账号',
         sharedData: '共享数据',
         compatibleClis: '兼容',
+        deprecated: '已弃用',
         factoryDroid: 'Factory Droid',
         system: '系统',
         health: '健康',
@@ -2495,16 +2592,18 @@ const resources = {
         lightMode: '浅色',
         darkMode: '深色',
         noDefaultCredentials: 'CCS 不提供默认用户名或密码。',
-        credentialsHint: '凭据需要在主机上通过 `ccs config auth setup` 创建，然后在这里使用。',
-        remoteSetupTitle: '远程访问需要在主机上完成设置',
-        remoteSetupDescription: '当前通过非本机地址打开控制台，但主机尚未启用控制台认证。',
+        credentialsHint:
+          '凭据需要在 CCS 主机上通过 `ccs config auth setup` 创建；Docker 部署必须在容器内运行该命令。',
+        remoteSetupTitle: '远程访问需要完成认证设置',
+        remoteSetupDescription: '当前通过非本机地址打开控制台，但此 CCS 实例尚未启用控制台认证。',
         incompleteSetupDescription:
-          '控制台认证已开启，但主机上的设置尚未完成。请先完成主机配置再登录。',
-        safetyNoteRemote: '在主机所有者启用控制台认证前，远程管理会保持锁定。',
+          '控制台认证已开启，但设置尚未完成。请先为此 CCS 实例完成配置再登录。',
+        safetyNoteRemote: '在 CCS 主机所有者启用控制台认证前，远程管理会保持锁定。',
         safetyNoteLocal: '如果你就在这台机器上，使用 localhost 地址始终是最直接的方式。',
-        safetyNoteSession: '登录成功后会创建仅限此主机的 HTTP-only 会话。',
-        hostStepTitle: '在主机上操作',
+        safetyNoteSession: '登录成功后会创建仅限此控制台主机的 HTTP-only 会话。',
+        hostStepTitle: '在 CCS 主机上操作',
         hostStepDescription: '创建或重新启用控制台凭据，然后再从远程设备重新打开此页面。',
+        dockerStepDescription: '如果是 Docker 部署，请在正在运行的容器内执行：',
         localStepTitle: '如果这就是你的机器',
         localStepDescription:
           '请使用 `ccs config` 输出的 localhost 地址，而不是局域网或 Tailscale 地址。',
@@ -3069,6 +3168,18 @@ const resources = {
         powerUserUnavailableRetry: '高级用户模式不可用。请完成当前提供商要求的安全步骤后重试。',
         authMethod: '认证方式',
         selectKiroAuthMethod: '选择 Kiro 认证方式',
+        gitlabAuthMethod: 'GitLab 认证方式',
+        selectGitlabAuthMethod: '选择 GitLab 认证方式',
+        gitlabAuthOAuth: '浏览器 OAuth',
+        gitlabAuthPat: '个人访问令牌',
+        gitlabAuthHint: 'gitlab.com 推荐使用浏览器 OAuth；自托管或管理员管理场景可使用 PAT。',
+        gitlabUrl: 'GitLab URL',
+        gitlabUrlPlaceholder: 'https://gitlab.com',
+        gitlabUrlHint: '可选。留空表示 gitlab.com，或填写你的自托管 GitLab 基础 URL。',
+        gitlabPat: '个人访问令牌',
+        gitlabPatPlaceholder: 'glpat-...',
+        gitlabPatHint: '令牌至少需要包含',
+        gitlabPatRequired: 'PAT 登录需要提供 GitLab 个人访问令牌。',
         nicknameRequired: '昵称（必填）',
         nicknameOptional: '昵称（选填）',
         nicknamePlaceholder: '例如：工作、个人',
@@ -3231,6 +3342,7 @@ const resources = {
         configFileNotFound: '未找到配置文件',
       },
       settingsTabs: {
+        browser: '浏览器',
         web: '网页',
         image: '图片',
         channels: '频道',
@@ -3416,6 +3528,8 @@ const resources = {
       },
       analytics: {
         title: '分析',
+        noDailyUsage: '今日无使用数据',
+        noUsageData: '无可用使用数据',
         subtitle: '追踪使用情况与洞察',
         month: '本月',
         allTime: '全部时间',
@@ -3618,11 +3732,17 @@ const resources = {
       cursorPage: {
         title: 'Cursor',
         beta: 'Beta',
-        subtitle: 'Cursor 集成专用控制面板',
-        unofficialTitle: '非官方 API - 风险自负',
-        unofficialItem1: '逆向集成可能随时失效',
-        unofficialItem2: '滥用或过量使用可能导致账号受限',
-        unofficialItem3: 'CCS 不提供担保，也不承担责任',
+        deprecated: '已弃用',
+        subtitle: '面向旧版 Cursor 使用场景的已弃用本地桥接',
+        unofficialTitle: '旧版桥接已弃用，优先使用 CLIProxy 支持的 Cursor',
+        unofficialItem1: '推荐路径：使用 CLIProxy 管理 Cursor 认证与账号',
+        unofficialItem2: '这个逆向本地桥接仅为仍在使用旧流程的用户保留',
+        unofficialItem3: 'CCS 不为这个旧路径提供担保，也不承担责任',
+        supportedPathTitle: '推荐路径',
+        supportedPathDesc:
+          '新的配置请使用 CLIProxy 支持的 Cursor 认证与账号管理。只有在你仍依赖旧的本地守护进程流程时，才继续使用下方旧版桥接。',
+        startCliproxyAuth: '启动 CLIProxy Cursor 认证',
+        openCliproxyCursor: '打开 CLIProxy Cursor',
         integration: '集成',
         authentication: '认证',
         daemon: '守护进程',
@@ -3633,11 +3753,11 @@ const resources = {
         notConnected: '未连接',
         running: '运行中',
         stopped: '已停止',
-        actions: '操作',
+        actions: '旧版操作',
         disableIntegration: '禁用集成',
         enableIntegration: '启用集成',
-        autoDetectAuth: '自动检测认证',
-        manualAuthImport: '手动导入认证',
+        autoDetectAuth: '旧版 IDE 自动检测',
+        manualAuthImport: '旧版手动导入',
         stopDaemon: '停止守护进程',
         startDaemon: '启动守护进程',
         port: '端口',
@@ -3877,10 +3997,11 @@ const resources = {
       },
       localhostDisclaimer: {
         remoteReadonlyAuthDisabledLong:
-          '远程控制台当前为只读，因为主机未启用控制台认证。请在主机上重新启用控制台认证以解锁远程编辑。',
-        remoteReadonlyAuthDisabledShort: '远程控制台为只读，直到主机重新启用控制台认证。',
-        remoteReadonlySetupLong: '远程控制台为只读，直到在主机上运行 ccs config auth setup。',
-        remoteReadonlySetupShort: '远程控制台为只读，直到完成主机认证配置。',
+          '远程控制台当前为只读，因为此 CCS 实例未启用控制台认证。请在 CCS 主机上重新启用；Docker 部署需要在运行中的容器内完成。',
+        remoteReadonlyAuthDisabledShort: '远程控制台为只读，直到此 CCS 实例重新启用控制台认证。',
+        remoteReadonlySetupLong:
+          '远程控制台为只读，直到为此 CCS 实例运行 ccs config auth setup。Docker 部署必须在容器内运行该命令。',
+        remoteReadonlySetupShort: '远程控制台为只读，直到为此 CCS 实例完成认证配置。',
         localLong: '本控制台在本地运行，所有数据保留在本机。',
         localShort: '本地控制台 - 数据保留在本机。',
         dismiss: '关闭提示',
@@ -4049,8 +4170,18 @@ const resources = {
       },
       accountSurfaceCard: {
         business: '企业',
+        free: '免费',
         personal: '个人',
         variant: '变体',
+      },
+      accountIdentity: {
+        business: '企业',
+        personal: '个人',
+        free: '免费',
+        team: '团队',
+        plus: 'Plus',
+        pro: 'Pro',
+        workspace: '工作区 {{id}}',
       },
       accountCardStats: {
         notUsedYet: '尚未使用',
@@ -4523,6 +4654,9 @@ const resources = {
         profileExportDownloaded: '配置导出已下载',
         profileImportFailed: '导入配置包失败',
       },
+      providerConfig: {
+        defaultDeviceCodeInstruction: '请在浏览器中完成授权。',
+      },
       profileEditorSections: {
         imageAnalysis: '图片分析',
         loadingImageSettings: '加载图片设置中...',
@@ -4706,6 +4840,57 @@ const resources = {
           description: '配置图片分析设置。',
           loading: '加载图片设置中...',
         },
+        browserSection: {
+          title: '浏览器',
+          description: 'CCS 中托管浏览器自动化的主设置入口。',
+          primaryTitle: 'Settings > Browser 是主要的浏览器设置界面。',
+          primaryDescription:
+            '在这里配置 Claude Browser Attach 和 Codex Browser Tools，然后按下方指引启动或验证每条路径。',
+          readiness: '就绪状态',
+          nextStep: '下一步',
+          technicalDetails: '技术细节',
+          diagnostics: '诊断信息',
+          actions: {
+            saveClaude: '保存 Claude 设置',
+            saveCodex: '保存 Codex 设置',
+            testConnection: '测试连接',
+            copyLaunchCommand: '复制启动命令',
+          },
+          messages: {
+            statusRefreshed: '浏览器状态已刷新',
+            launchCommandCopied: '启动命令已复制',
+          },
+          claude: {
+            title: 'Claude Browser Attach',
+            description: '将 Claude 目标会话附加到启用了远程调试的 Chrome 会话。',
+            enabledLabel: '启用 Claude Browser Attach',
+            enabledDescription: '启用后，CCS 会为 Claude 目标会话准备托管浏览器 MCP 运行时。',
+            userDataDir: 'Chrome 用户数据目录',
+            userDataDirHint: '建议使用单独的 Chrome 配置目录，避免自动化状态污染日常浏览器。',
+            devtoolsPort: 'DevTools 端口',
+            devtoolsPortHint: '必须与 Chrome attach 模式实际启动时使用的端口一致。',
+            devtoolsPortInvalid: '请输入 1 到 65535 之间的有效端口。',
+            effectivePath: '当前生效的 attach 路径',
+            recommendedPath: '推荐路径',
+            managedRuntime: '托管浏览器运行时',
+            overrideMessage:
+              '当前存在来自 {{source}} 的环境变量覆盖。移除该覆盖后，Dashboard 配置将重新成为唯一来源。',
+            launchGuidance: '启动指引',
+            launchGuidanceHint: '使用远程调试启动 Chrome，如有需要再重新执行 Test connection。',
+          },
+          codex: {
+            title: 'Codex Browser Tools',
+            description: '控制 Codex 目标会话中的托管 Playwright MCP 浏览器路径。',
+            enabledLabel: '启用 Codex Browser Tools',
+            enabledDescription: '保持开启可让 Browser 页面成为 Codex 浏览器工具的主设置入口。',
+            serverName: '托管服务名称',
+            overrideSupport: '配置覆盖支持',
+            overrideSupported: '支持',
+            overrideUnsupported: '不支持',
+            binary: '检测到的 Codex 可执行文件',
+            notDetected: '未检测到',
+          },
+        },
       },
       codexPage: {
         title: 'Codex',
@@ -4785,6 +4970,7 @@ const resources = {
         allAccounts: 'Tất cả tài khoản',
         sharedData: 'Dữ liệu dùng chung',
         compatibleClis: 'Tương thích',
+        deprecated: 'Đã ngừng ưu tiên',
         factoryDroid: 'Factory Droid',
         system: 'Hệ thống',
         health: 'Sức khỏe',
@@ -4817,21 +5003,22 @@ const resources = {
         darkMode: 'Tối',
         noDefaultCredentials: 'CCS không có sẵn tài khoản hay mật khẩu mặc định.',
         credentialsHint:
-          'Thông tin đăng nhập được tạo trên máy host bằng `ccs config auth setup`, rồi dùng tại đây.',
-        remoteSetupTitle: 'Truy cập từ xa cần được thiết lập trên máy host',
+          'Thông tin đăng nhập được tạo bằng `ccs config auth setup` trên máy CCS host. Với Docker, phải chạy lệnh đó bên trong container.',
+        remoteSetupTitle: 'Truy cập từ xa cần thiết lập xác thực',
         remoteSetupDescription:
-          'Bảng điều khiển này đang được mở từ một địa chỉ không phải localhost, nhưng máy host chưa bật dashboard auth.',
+          'Bảng điều khiển này đang được mở từ một địa chỉ không phải localhost, nhưng phiên bản CCS này chưa bật dashboard auth.',
         incompleteSetupDescription:
-          'Dashboard auth đã được bật nhưng cấu hình trên máy host vẫn chưa hoàn tất. Hãy hoàn thành cấu hình trước khi đăng nhập.',
+          'Dashboard auth đã được bật nhưng cấu hình vẫn chưa hoàn tất. Hãy hoàn thành cấu hình cho phiên bản CCS này trước khi đăng nhập.',
         safetyNoteRemote:
-          'Quản trị từ xa sẽ tiếp tục bị khóa cho tới khi chủ máy host bật dashboard auth.',
+          'Quản trị từ xa sẽ tiếp tục bị khóa cho tới khi chủ máy CCS host bật dashboard auth.',
         safetyNoteLocal:
           'Nếu bạn đang ngồi ngay trên máy đó, đường localhost vẫn là cách đơn giản nhất để vào.',
         safetyNoteSession:
-          'Sau khi đăng nhập thành công, phiên HTTP-only sẽ chỉ có hiệu lực trên đúng máy host này.',
-        hostStepTitle: 'Trên máy host',
+          'Sau khi đăng nhập thành công, phiên HTTP-only sẽ chỉ có hiệu lực trên đúng máy chủ dashboard này.',
+        hostStepTitle: 'Trên máy CCS host',
         hostStepDescription:
           'Tạo hoặc bật lại thông tin đăng nhập cho dashboard, rồi mở lại trang này từ thiết bị từ xa.',
+        dockerStepDescription: 'Nếu dùng Docker, hãy chạy lệnh này bên trong container đang chạy:',
         localStepTitle: 'Nếu đây là máy của bạn',
         localStepDescription:
           'Hãy mở URL localhost mà `ccs config` in ra, thay vì địa chỉ LAN hoặc Tailscale.',
@@ -5454,6 +5641,20 @@ const resources = {
           'Chế độ power user hiện không khả dụng. Hãy hoàn tất bước an toàn bắt buộc của nhà cung cấp rồi thử lại.',
         authMethod: 'Phương thức xác thực',
         selectKiroAuthMethod: 'Chọn phương thức xác thực Kiro',
+        gitlabAuthMethod: 'Phương thức xác thực GitLab',
+        selectGitlabAuthMethod: 'Chọn phương thức xác thực GitLab',
+        gitlabAuthOAuth: 'OAuth trên trình duyệt',
+        gitlabAuthPat: 'Personal Access Token',
+        gitlabAuthHint:
+          'Dùng OAuth trên trình duyệt cho gitlab.com, hoặc PAT cho GitLab tự lưu trữ và môi trường do quản trị viên quản lý.',
+        gitlabUrl: 'GitLab URL',
+        gitlabUrlPlaceholder: 'https://gitlab.com',
+        gitlabUrlHint:
+          'Tùy chọn. Để trống cho gitlab.com, hoặc nhập URL GitLab tự lưu trữ của bạn.',
+        gitlabPat: 'Personal Access Token',
+        gitlabPatPlaceholder: 'glpat-...',
+        gitlabPatHint: 'Token phải có ít nhất các scope',
+        gitlabPatRequired: 'PAT login yêu cầu GitLab Personal Access Token.',
         nicknameRequired: 'Biệt danh (bắt buộc)',
         nicknameOptional: 'Biệt danh (tùy chọn)',
         nicknamePlaceholder: 'ví dụ: công việc, cá nhân',
@@ -5625,6 +5826,7 @@ const resources = {
         configFileNotFound: 'Không tìm thấy tập tin cấu hình',
       },
       settingsTabs: {
+        browser: 'Trình duyệt',
         web: 'Web',
         image: 'Hình ảnh',
         channels: 'Kênh',
@@ -5821,6 +6023,8 @@ const resources = {
       },
       analytics: {
         title: 'Phân tích',
+        noDailyUsage: 'Không có dữ liệu sử dụng cho hôm nay',
+        noUsageData: 'Không có dữ liệu sử dụng',
         subtitle: 'Theo dõi việc sử dụng và thông tin chi tiết',
         month: 'Tháng',
         allTime: 'Tất cả thời gian',
@@ -6031,11 +6235,17 @@ const resources = {
       cursorPage: {
         title: 'Cursor',
         beta: 'Beta',
-        subtitle: 'Bảng điều khiển tích hợp Cursor',
-        unofficialTitle: 'API không chính thức - Bạn phải tự chịu rủi ro khi sử dụng',
-        unofficialItem1: 'Tích hợp thiết kế ngược có thể bị hỏng bất cứ lúc nào',
-        unofficialItem2: 'Lạm dụng hoặc sử dụng quá mức có thể có nguy cơ bị hạn chế tài khoản',
-        unofficialItem3: 'Không bảo hành, không chịu trách nhiệm từ CCS',
+        deprecated: 'Đã ngừng ưu tiên',
+        subtitle: 'Cầu nối cục bộ đã bị ngừng ưu tiên cho các thiết lập Cursor cũ',
+        unofficialTitle: 'Cầu nối cũ đã bị ngừng ưu tiên - hãy dùng Cursor qua CLIProxy',
+        unofficialItem1: 'Đường dẫn được hỗ trợ: xác thực và quản lý tài khoản Cursor qua CLIProxy',
+        unofficialItem2: 'Cầu nối cục bộ reverse-engineered này chỉ còn dành cho các thiết lập cũ',
+        unofficialItem3: 'CCS không bảo hành và không chịu trách nhiệm cho đường dẫn cũ này',
+        supportedPathTitle: 'Đường dẫn được hỗ trợ',
+        supportedPathDesc:
+          'Hãy dùng xác thực và quản lý tài khoản Cursor qua CLIProxy cho các thiết lập mới. Chỉ giữ cầu nối cũ bên dưới nếu bạn vẫn phụ thuộc vào luồng daemon cục bộ trước đây.',
+        startCliproxyAuth: 'Bắt đầu xác thực Cursor qua CLIProxy',
+        openCliproxyCursor: 'Mở Cursor trong CLIProxy',
         integration: 'Tích hợp',
         authentication: 'Xác thực',
         daemon: 'Daemon',
@@ -6046,11 +6256,11 @@ const resources = {
         notConnected: 'Chưa kết nối',
         running: 'Đang chạy',
         stopped: 'Đã dừng',
-        actions: 'Hành động',
+        actions: 'Hành động cũ',
         disableIntegration: 'Vô hiệu hóa tích hợp',
         enableIntegration: 'Kích hoạt tích hợp',
-        autoDetectAuth: 'Tự động phát hiện xác thực',
-        manualAuthImport: 'Nhập xác thực thủ công',
+        autoDetectAuth: 'Tự dò IDE cũ',
+        manualAuthImport: 'Nhập thủ công kiểu cũ',
         stopDaemon: 'Dừng Daemon',
         startDaemon: 'Khởi động Daemon',
         port: 'Cổng',
@@ -6293,13 +6503,13 @@ const resources = {
       },
       localhostDisclaimer: {
         remoteReadonlyAuthDisabledLong:
-          'Dashboard từ xa ở chế độ chỉ đọc vì dashboard auth đang bị tắt trên máy host. Bật lại dashboard auth trên máy host để mở khóa thay đổi từ xa.',
+          'Dashboard từ xa đang ở chế độ chỉ đọc vì dashboard auth đang bị tắt cho phiên bản CCS này. Hãy bật lại trên máy CCS host; với Docker, việc đó phải được thực hiện bên trong container đang chạy.',
         remoteReadonlyAuthDisabledShort:
-          'Dashboard từ xa chỉ đọc cho đến khi dashboard auth được bật lại trên máy host.',
+          'Dashboard từ xa chỉ đọc cho đến khi dashboard auth được bật lại cho phiên bản CCS này.',
         remoteReadonlySetupLong:
-          'Dashboard từ xa chỉ đọc cho đến khi bạn chạy ccs config auth setup trên máy host.',
+          'Dashboard từ xa chỉ đọc cho đến khi bạn chạy ccs config auth setup cho phiên bản CCS này. Với Docker, hãy chạy lệnh đó bên trong container.',
         remoteReadonlySetupShort:
-          'Dashboard từ xa chỉ đọc cho đến khi auth được cấu hình trên máy host.',
+          'Dashboard từ xa chỉ đọc cho đến khi auth được cấu hình cho phiên bản CCS này.',
         localLong: 'Dashboard này chạy cục bộ. Toàn bộ dữ liệu nằm trên máy của bạn.',
         localShort: 'Dashboard cục bộ - dữ liệu nằm trên thiết bị của bạn.',
         dismiss: 'Bỏ qua thông báo',
@@ -6469,8 +6679,18 @@ const resources = {
       },
       accountSurfaceCard: {
         business: 'Biz',
+        free: 'Miễn phí',
         personal: 'Cá nhân',
         variant: 'Biến thể',
+      },
+      accountIdentity: {
+        business: 'Doanh nghiệp',
+        personal: 'Cá nhân',
+        free: 'Miễn phí',
+        team: 'Nhóm',
+        plus: 'Plus',
+        pro: 'Pro',
+        workspace: 'Không gian {{id}}',
       },
       accountCardStats: {
         notUsedYet: 'Chưa sử dụng',
@@ -6948,6 +7168,9 @@ const resources = {
         profileExportDownloaded: 'Đã tải xuống xuất hồ sơ',
         profileImportFailed: 'Không nhập được gói hồ sơ',
       },
+      providerConfig: {
+        defaultDeviceCodeInstruction: 'Hoàn tất việc cấp quyền trong trình duyệt của bạn.',
+      },
       profileEditorSections: {
         imageAnalysis: 'Phân tích hình ảnh',
         loadingImageSettings: 'Đang tải cài đặt hình ảnh...',
@@ -7134,6 +7357,64 @@ const resources = {
           description: 'Cấu hình cài đặt phân tích hình ảnh.',
           loading: 'Đang tải cài đặt hình ảnh...',
         },
+        browserSection: {
+          title: 'Trình duyệt',
+          description: 'Bề mặt thiết lập chính cho tự động hóa trình duyệt được CCS quản lý.',
+          primaryTitle: 'Settings > Browser là nơi thiết lập trình duyệt chính.',
+          primaryDescription:
+            'Cấu hình Claude Browser Attach và Codex Browser Tools tại đây, rồi dùng hướng dẫn bên dưới để khởi chạy hoặc kiểm tra từng luồng.',
+          readiness: 'Trạng thái sẵn sàng',
+          nextStep: 'Bước tiếp theo',
+          technicalDetails: 'Chi tiết kỹ thuật',
+          diagnostics: 'Chẩn đoán',
+          actions: {
+            saveClaude: 'Lưu cấu hình Claude',
+            saveCodex: 'Lưu cấu hình Codex',
+            testConnection: 'Kiểm tra kết nối',
+            copyLaunchCommand: 'Sao chép lệnh khởi chạy',
+          },
+          messages: {
+            statusRefreshed: 'Đã làm mới trạng thái trình duyệt',
+            launchCommandCopied: 'Đã sao chép lệnh khởi chạy',
+          },
+          claude: {
+            title: 'Claude Browser Attach',
+            description:
+              'Gắn các phiên chạy Claude-target vào một phiên Chrome có bật remote debugging.',
+            enabledLabel: 'Bật Claude Browser Attach',
+            enabledDescription:
+              'Khi bật, CCS sẽ chuẩn bị runtime MCP trình duyệt được quản lý cho các phiên chạy Claude-target.',
+            userDataDir: 'Thư mục dữ liệu người dùng Chrome',
+            userDataDirHint:
+              'Nên dùng thư mục profile Chrome riêng để trạng thái attach được tách khỏi trình duyệt hằng ngày.',
+            devtoolsPort: 'Cổng DevTools',
+            devtoolsPortHint:
+              'Phải khớp với cổng thực tế dùng khi khởi chạy Chrome trong attach mode.',
+            devtoolsPortInvalid: 'Nhập cổng hợp lệ trong khoảng 1 đến 65535.',
+            effectivePath: 'Đường dẫn attach đang có hiệu lực',
+            recommendedPath: 'Đường dẫn khuyến nghị',
+            managedRuntime: 'Runtime trình duyệt được quản lý',
+            overrideMessage:
+              'Hiện có override môi trường từ {{source}}. Khi bỏ override này, Dashboard sẽ lại là nguồn cấu hình chính.',
+            launchGuidance: 'Hướng dẫn khởi chạy',
+            launchGuidanceHint:
+              'Khởi chạy Chrome với remote debugging, rồi chạy lại Test connection nếu cần.',
+          },
+          codex: {
+            title: 'Codex Browser Tools',
+            description:
+              'Điều khiển đường dẫn trình duyệt Playwright MCP được quản lý cho các phiên chạy Codex-target.',
+            enabledLabel: 'Bật Codex Browser Tools',
+            enabledDescription:
+              'Giữ bật để trang Browser là nơi cấu hình chính cho công cụ trình duyệt của Codex.',
+            serverName: 'Tên dịch vụ được quản lý',
+            overrideSupport: 'Hỗ trợ config override',
+            overrideSupported: 'Được hỗ trợ',
+            overrideUnsupported: 'Không được hỗ trợ',
+            binary: 'Binary Codex được phát hiện',
+            notDetected: 'Không phát hiện',
+          },
+        },
       },
       codexPage: {
         title: 'Codex',
@@ -7213,6 +7494,7 @@ const resources = {
         allAccounts: 'すべてのアカウント',
         sharedData: '共有データ',
         compatibleClis: '互換',
+        deprecated: '非推奨',
         factoryDroid: 'Factory Droid',
         system: 'システム',
         health: 'ヘルス',
@@ -7245,20 +7527,21 @@ const resources = {
         darkMode: 'ダーク',
         noDefaultCredentials: 'CCS にデフォルトの認証情報はありません。',
         credentialsHint:
-          '認証情報はホスト側で `ccs config auth setup` を実行して作成し、ここで使用します。',
-        remoteSetupTitle: 'リモートアクセスにはホスト側の設定が必要です',
+          '認証情報は CCS ホスト上で `ccs config auth setup` を実行して作成します。Docker では、そのコマンドをコンテナ内で実行する必要があります。',
+        remoteSetupTitle: 'リモートアクセスには認証設定が必要です',
         remoteSetupDescription:
-          'このダッシュボードはローカル以外のアドレスから開かれていますが、ホストでダッシュボード認証がまだ有効になっていません。',
+          'このダッシュボードはローカル以外のアドレスから開かれていますが、この CCS インスタンスではダッシュボード認証がまだ有効になっていません。',
         incompleteSetupDescription:
-          'ダッシュボード認証は有効ですが、ホスト側の設定が未完了です。サインイン前に設定を完了してください。',
+          'ダッシュボード認証は有効ですが、設定が未完了です。この CCS インスタンスの設定を完了してからサインインしてください。',
         safetyNoteRemote:
-          'ホスト管理者がダッシュボード認証を有効にするまで、リモート管理はロックされたままです。',
+          'CCS ホスト管理者がダッシュボード認証を有効にするまで、リモート管理はロックされたままです。',
         safetyNoteLocal: '同じマシン上にいる場合は、localhost の URL を使うのが最も簡単です。',
         safetyNoteSession:
-          'サインインに成功すると、このホストに限定された HTTP-only セッションが作成されます。',
-        hostStepTitle: 'ホスト側で行うこと',
+          'サインインに成功すると、このダッシュボードホストに限定された HTTP-only セッションが作成されます。',
+        hostStepTitle: 'CCS ホスト側で行うこと',
         hostStepDescription:
           'ダッシュボード認証情報を作成または再有効化してから、このページをリモート端末で開き直してください。',
+        dockerStepDescription: 'Docker の場合は、実行中のコンテナ内で次を実行してください:',
         localStepTitle: 'もしこのマシンを使っているなら',
         localStepDescription:
           '`ccs config` が表示する localhost の URL を使い、LAN や Tailscale のアドレスは避けてください。',
@@ -7881,6 +8164,20 @@ const resources = {
           'パワーユーザーモードは利用できません。必要なプロバイダーの安全確認を完了してから再試行してください。',
         authMethod: '認証方法',
         selectKiroAuthMethod: 'Kiro の認証方法を選択',
+        gitlabAuthMethod: 'GitLab 認証方法',
+        selectGitlabAuthMethod: 'GitLab 認証方法を選択',
+        gitlabAuthOAuth: 'ブラウザー OAuth',
+        gitlabAuthPat: 'Personal Access Token',
+        gitlabAuthHint:
+          'gitlab.com ではブラウザー OAuth を使い、自前ホストや管理者運用環境では PAT を使ってください。',
+        gitlabUrl: 'GitLab URL',
+        gitlabUrlPlaceholder: 'https://gitlab.com',
+        gitlabUrlHint:
+          '任意です。gitlab.com を使う場合は空欄のままにし、自前ホストの場合はベース URL を指定してください。',
+        gitlabPat: 'Personal Access Token',
+        gitlabPatPlaceholder: 'glpat-...',
+        gitlabPatHint: 'トークンには少なくとも次のスコープが必要です:',
+        gitlabPatRequired: 'PAT ログインには GitLab Personal Access Token が必要です。',
         nicknameRequired: 'ニックネーム（必須）',
         nicknameOptional: 'ニックネーム（任意）',
         nicknamePlaceholder: '例: work, personal',
@@ -8052,6 +8349,7 @@ const resources = {
         configFileNotFound: '設定ファイルが見つかりません',
       },
       settingsTabs: {
+        browser: 'ブラウザ',
         web: 'Web検索',
         image: '画像',
         channels: 'チャンネル',
@@ -8255,6 +8553,8 @@ const resources = {
       },
       analytics: {
         title: '分析',
+        noDailyUsage: '本日の使用データはありません',
+        noUsageData: '利用可能な使用データはありません',
         subtitle: '利用状況とインサイトを確認',
         month: '月',
         allTime: '全期間',
@@ -8464,12 +8764,18 @@ const resources = {
       cursorPage: {
         title: 'Cursor',
         beta: 'ベータ',
-        subtitle: 'Cursor 専用の連携設定',
-        unofficialTitle: '非公式API - 自己責任で利用',
-        unofficialItem1:
-          'リバースエンジニアリング連携のため、いつでも利用不能になる可能性があります',
-        unofficialItem2: '不正利用や過度な利用により、アカウントが制限されるおそれがあります',
-        unofficialItem3: 'CCSは保証も責任も負いません',
+        deprecated: '非推奨',
+        subtitle: '旧 Cursor セットアップ向けの非推奨ローカルブリッジ',
+        unofficialTitle: 'レガシーブリッジは非推奨です。CLIProxy 管理の Cursor を優先してください',
+        unofficialItem1: '推奨パス: CLIProxy で Cursor の認証とアカウント管理を行う',
+        unofficialItem2:
+          'このリバースエンジニアリングされたローカルブリッジは、既存セットアップ向けの互換用です',
+        unofficialItem3: 'このレガシーパスについて CCS は保証も責任も負いません',
+        supportedPathTitle: '推奨パス',
+        supportedPathDesc:
+          '新しいセットアップでは、CLIProxy 管理の Cursor 認証とアカウント管理を使ってください。旧来のローカルデーモンに依存している場合のみ、下のレガシーブリッジを使い続けてください。',
+        startCliproxyAuth: 'CLIProxy で Cursor 認証を開始',
+        openCliproxyCursor: 'CLIProxy の Cursor を開く',
         integration: '連携',
         authentication: '認証',
         daemon: 'デーモン',
@@ -8480,11 +8786,11 @@ const resources = {
         notConnected: '未接続',
         running: '稼働中',
         stopped: '停止中',
-        actions: '操作',
+        actions: 'レガシー操作',
         disableIntegration: '連携を無効化',
         enableIntegration: '連携を有効化',
-        autoDetectAuth: '認証を自動検出',
-        manualAuthImport: '認証情報を手動インポート',
+        autoDetectAuth: '旧 IDE から自動検出',
+        manualAuthImport: '旧方式で手動インポート',
         stopDaemon: 'デーモンを停止',
         startDaemon: 'デーモンを起動',
         port: 'ポート',
@@ -8671,8 +8977,18 @@ const resources = {
       },
       accountSurfaceCard: {
         business: 'ビジネス',
+        free: '無料',
         personal: '個人',
         variant: 'バリアント',
+      },
+      accountIdentity: {
+        business: 'ビジネス',
+        personal: '個人',
+        free: '無料',
+        team: 'チーム',
+        plus: 'Plus',
+        pro: 'Pro',
+        workspace: 'ワークスペース {{id}}',
       },
       aiProvidersEntryCard: {
         apiKeys: 'API Keys',
@@ -9123,13 +9439,13 @@ const resources = {
       },
       localhostDisclaimer: {
         remoteReadonlyAuthDisabledLong:
-          'ホストでダッシュボード認証が無効になっているため、リモートダッシュボードは読み取り専用です。リモートでの変更を有効にするには、ホスト側でダッシュボード認証を再度有効にしてください。',
+          'この CCS インスタンスでダッシュボード認証が無効になっているため、リモートダッシュボードは読み取り専用です。CCS ホスト側で再度有効にしてください。Docker では、実行中のコンテナ内で行う必要があります。',
         remoteReadonlyAuthDisabledShort:
-          'ホストでダッシュボード認証が再有効化されるまで、リモートダッシュボードは読み取り専用です。',
+          'この CCS インスタンスでダッシュボード認証が再有効化されるまで、リモートダッシュボードは読み取り専用です。',
         remoteReadonlySetupLong:
-          'ホストで ccs config auth setup を実行するまで、リモートダッシュボードは読み取り専用です。',
+          'この CCS インスタンスで ccs config auth setup を実行するまで、リモートダッシュボードは読み取り専用です。Docker では、そのコマンドをコンテナ内で実行してください。',
         remoteReadonlySetupShort:
-          'ホストの認証が設定されるまで、リモートダッシュボードは読み取り専用です。',
+          'この CCS インスタンスの認証が設定されるまで、リモートダッシュボードは読み取り専用です。',
         localLong:
           'このダッシュボードはローカルで動作しています。データはすべてお使いのマシンに残ります。',
         localShort: 'ローカルダッシュボード - データはお使いのデバイスに保存されます。',
@@ -9465,6 +9781,64 @@ const resources = {
           description: '画像分析の設定。',
           loading: '画像設定を読み込み中...',
         },
+        browserSection: {
+          title: 'ブラウザ',
+          description: 'CCS が管理するブラウザ自動化の主要な設定画面です。',
+          primaryTitle: 'Settings > Browser がブラウザ設定の主入口です。',
+          primaryDescription:
+            'ここで Claude Browser Attach と Codex Browser Tools を設定し、各レーンの起動や確認は下の案内を使ってください。',
+          readiness: '準備状況',
+          nextStep: '次の手順',
+          technicalDetails: '技術的な詳細',
+          diagnostics: '診断情報',
+          actions: {
+            saveClaude: 'Claude 設定を保存',
+            saveCodex: 'Codex 設定を保存',
+            testConnection: '接続を確認',
+            copyLaunchCommand: '起動コマンドをコピー',
+          },
+          messages: {
+            statusRefreshed: 'ブラウザ状態を更新しました',
+            launchCommandCopied: '起動コマンドをコピーしました',
+          },
+          claude: {
+            title: 'Claude Browser Attach',
+            description:
+              'リモートデバッグを有効にした Chrome セッションへ Claude-target の起動を接続します。',
+            enabledLabel: 'Claude Browser Attach を有効にする',
+            enabledDescription:
+              '有効にすると、CCS は Claude-target 起動向けに管理済みブラウザ MCP ランタイムを準備します。',
+            userDataDir: 'Chrome ユーザーデータディレクトリ',
+            userDataDirHint:
+              '日常利用のブラウザと状態を分離するため、専用の Chrome プロファイルディレクトリを使うことを推奨します。',
+            devtoolsPort: 'DevTools ポート',
+            devtoolsPortHint:
+              'Chrome を attach モードで起動したときに使う実際のポートと一致させてください。',
+            devtoolsPortInvalid: '1 から 65535 の有効なポート番号を入力してください。',
+            effectivePath: '現在有効な attach パス',
+            recommendedPath: '推奨パス',
+            managedRuntime: '管理済みブラウザランタイム',
+            overrideMessage:
+              '{{source}} から環境変数オーバーライドが有効です。これを外すと Dashboard の設定が再び主ソースになります。',
+            launchGuidance: '起動ガイダンス',
+            launchGuidanceHint:
+              'リモートデバッグ付きで Chrome を起動し、必要なら Test connection を再実行してください。',
+          },
+          codex: {
+            title: 'Codex Browser Tools',
+            description:
+              'Codex-target 起動向けの管理済み Playwright MCP ブラウザパスを制御します。',
+            enabledLabel: 'Codex Browser Tools を有効にする',
+            enabledDescription:
+              '有効のままにすると、Browser ページが Codex ブラウザツールの主設定画面になります。',
+            serverName: '管理対象サーバー名',
+            overrideSupport: 'config override 対応',
+            overrideSupported: '対応',
+            overrideUnsupported: '非対応',
+            binary: '検出された Codex バイナリ',
+            notDetected: '未検出',
+          },
+        },
       },
       setupWizard: {
         title: 'クイックセットアップウィザード',
@@ -9607,6 +9981,9 @@ const resources = {
         destinationEmpty: '送信先プロファイル名は空にできません',
         profileExportDownloaded: 'プロファイルエクスポートをダウンロードしました',
         profileImportFailed: 'プロファイルバンドルのインポートに失敗しました',
+      },
+      providerConfig: {
+        defaultDeviceCodeInstruction: 'ブラウザーで認証を完了してください。',
       },
       updatesSpotlight: {
         openUpdatesCenter: '更新センターを開く',
